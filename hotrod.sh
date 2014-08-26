@@ -21,6 +21,8 @@ if [[ $HOTROD_URL != *https* ]]; then
   exit 1
 fi 
 
+set -e 
+
 docker build -t panoptix/hotrod .
 
 if [[ "$1" == "shell" ]]; then
