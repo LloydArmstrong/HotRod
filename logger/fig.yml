@@ -1,5 +1,5 @@
 ldapauth:
-   image: panoptix/ldap
+   build: site/docker-ldap
    command: '-d 64'
 
 cas:
@@ -85,7 +85,7 @@ kibanarproxy:
      - cas:cas
 
 sslrproxy:
-   image: panoptix/sslrproxy
+   build: site/docker-sslrproxy
    links:
      - kibanarproxy:kibanarproxy
      - cas:cas
