@@ -39,4 +39,3 @@ python /tmp/mini-templates/mini.py
 cd logger
 fig -p hotrodlogger build
 fig -p hotrodlogger up
-~            
