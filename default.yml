@@ -1,5 +1,5 @@
 evariables:
-  - hotrodurl
+  - HOTROD_URL
 
 templates:
   - src: logger/site/docker-kibanarproxy/reverse.conf.orig
