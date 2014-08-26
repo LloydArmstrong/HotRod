@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-hotrodurl="https://$1"
+hotrodurl="$1"
 export hotrodurl
 
 python /tmp/mini-templates/mini.py
