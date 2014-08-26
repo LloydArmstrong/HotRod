@@ -7,7 +7,23 @@ It is under heavy development and should be handled with care.
 ### Bugs/Roadmap
 
 HERE BE DRAGONS, HotRod is not ready for production use unless you know what you're doing, considered pre-Alpha. There are known security issues (static passwords, static SSL keys, badness), which can, will and should be fixed.
+
+
+Clone the sourcecode on a server running Docker:
+
+    git clone https://github.com/panoptix-za/HotRod.git
+
+If HotRod is set to run publicy there is some limited support to attempt an auto-bootstrap. Just issue:
+
+    cd HotRod
+    sudo ./hotrod.sh
+
+If this fails set the environment variable HOTROD_URL to an appropriate value.
+
+    export HOTROD_URL="https://192.168.0.1"
    
+> Only https on port 443 is supported at this time.
+ 
 ### What is HotRod
 
 - Opinionated Docker PaaS
