@@ -3,7 +3,7 @@ MAINTAINER Stephan Buys <stephan.buys@panoptix.co.za>
 
 ENV REFRESHED_ON "25 Aug 2014"
 
-RUN apt-get update && apt-get -y install git python-jinja2 python-yaml python-pip docker.io
+RUN apt-get update && apt-get -y install git python-jinja2 python-yaml python-pip docker.io curl
 RUN pip install --upgrade fig
 
 WORKDIR /tmp
