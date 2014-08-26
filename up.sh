@@ -7,11 +7,9 @@ if [[ "$HOTROD_URL" == "" ]]; then
   EXTERNAL_IP=$(curl http://v4.ident.me 2>/dev/null)
   RET=$?
   echo "EXTERNAL_IP=$EXTERNAL_IP RET=$RET"
-  SHOSTED=$(ifconfig | grep ${EXTERNAL_IP})
-  FOUND="$?"
 
-  if [[ "$FOUND" != "0" && "$RET" == "0" ]]; then
-    echo "Not publicly hosted, auto bootstrap needs input."
+  if [[ "$RET" != "0" ]]; then
+    echo "Internet not accessible, auto bootstrap needs input."
     echo "Please set environment variable HOTROD_URL"
     exit 1
   else
