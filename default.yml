@@ -1,0 +1,8 @@
+evariables:
+  - hotrodurl
+
+templates:
+  - src: logger/site/docker-kibanarproxy/reverse.conf.orig
+    dst: logger/site/docker-kibanarproxy/reverse.conf
+
+

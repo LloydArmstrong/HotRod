@@ -1,0 +1,25 @@
+CASValidateServer off
+CASDebug on
+LogLevel warn
+
+<VirtualHost *:*>
+ 
+    ProxyPreserveHost On
+    ProxyPass / http://kibana/ 
+    ProxyPassReverse / http://kibana/
+
+    ServerName service.local
+    #See https://github.com/Jasig/mod_auth_cas
+    CASRootProxiedAs {{ hotrodurl }}
+    CASCookiePath /var/cache/apache2/mod_auth_cas/
+    CASLoginURL {{ hotrodurl }}/cas/login?gateway=true
+    CASValidateURL  http://cas:8080/cas/proxyValidate
+
+    <Location />
+        Authtype CAS
+        require valid-user
+        CASAuthNHeader Cas-User
+    </Location>
+
+</VirtualHost>
+
