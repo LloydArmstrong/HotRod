@@ -1,8 +1,13 @@
 evariables:
-  - HOTROD_URL
+   - HOTROD_URL
+
+variables:
+   admin_ssh: |
+     ssh-rsa add-key-here 
 
 templates:
   - src: logger/site/docker-kibanarproxy/reverse.conf.orig
     dst: logger/site/docker-kibanarproxy/reverse.conf
-
+  - src: core/build/coregitblit/admin.keys.orig
+    dst: core/build/coregitblit/admin.keys
 

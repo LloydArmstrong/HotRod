@@ -1,0 +1,38 @@
+
+corejenkins:
+   build: build/corejenkins
+   volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+   links:
+     - ciambassador2:gitblit
+   ports:
+     - 8080:8080
+
+jenkinsbuilder:
+   build: build/jenkinsbuilder
+   links:
+     - corejenkins:jenkins
+     - coregitblit:gitblit
+
+ciambassador:
+   image: panoptix/grand-ambassador
+   volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+   command: -name core_corejenkins_1 -wait
+   
+coregitblit:
+   build: build/coregitblit
+   links:
+     - ciambassador:jenkins
+   ports:
+     - 8443:443
+     - 9418:9418
+     - 29418:29418
+
+ciambassador2:
+   image: panoptix/grand-ambassador
+   volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+   command: -name core_coregitblit_1 -wait
+
+
