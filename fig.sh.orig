@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e 
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+
+declare -a arr=("{{ figsubprojects|join('" "') }}")
+
+for i in "${arr[@]}"
+do
+   echo "HOTROD>> $i: fig" "$@"
+   cd $DIR/$i
+   fig "$@"
+done
+
+
+
+
+
+
+
+
+
+

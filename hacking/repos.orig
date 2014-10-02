@@ -1,0 +1,6 @@
+declare -a repos=(
+{% for prefix in repos -%}
+{% for repo in repos[prefix] -%}
+    git://{{ prefix }}/{{ repo }}
+{% endfor %}
+{%- endfor %})

@@ -1,0 +1,8 @@
+
+{% for prefix in repos -%}
+{% for repo in repos[prefix] -%}
+{{ repo }}:
+   build: {{ repo }}
+   
+{% endfor %}
+{%- endfor %}
