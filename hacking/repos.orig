@@ -4,3 +4,11 @@ declare -a repos=(
     git://{{ prefix }}/{{ repo }}
 {% endfor %}
 {%- endfor %})
+
+declare -a projects=(
+{% for prefix in repos -%}
+{% for repo in repos[prefix] -%}
+    {{ repo }}
+{% endfor %}
+{%- endfor %})
+

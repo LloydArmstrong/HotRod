@@ -5,6 +5,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
 
 source $DIR/repos
+mkdir -p $DIR/masters
+cd $DIR/masters
 
 for i in "${repos[@]}"
 do

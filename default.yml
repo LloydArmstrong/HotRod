@@ -49,24 +49,28 @@ variables:
 
    repos:   
       'github.com/panoptix-za':
-          - HotRod
-          - hotrod-auth
-          - hotrod-admin
           - docker-saltmaster
           - docker-gitblit
           - docker-grand-ambassador
           - docker-jenkins
           - docker-rundeck
           - docker-kibana
-          - docker-sslproxy
+          - docker-sslrproxy
           - docker-modcasproxy
           - docker-cas
           - docker-ldap
           - docker-logstash
           - docker-jdk
           - docker-rsyslog
+
+   repos_no_dockerfile:   
+      'github.com/panoptix-za':
+          - HotRod
+          - hotrod-auth
+          - hotrod-admin
           - cas-overlay
           - mini-templates
+ 
 
 templates:
 #  - src: fig.sh.orig
