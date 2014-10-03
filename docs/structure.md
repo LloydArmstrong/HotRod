@@ -1,9 +1,11 @@
 
 #Project structure
 
-- masters/
-      pull_masters.sh
-
+- hacking/
+      work on the dependent images, build your own local images.
+      build.sh (The Docker build of all the images)
+      git.sh (a wrapper to easily clone all the images)
+      
 - project/
       fig based settings applied to containers for this project
       - basis/

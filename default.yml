@@ -14,40 +14,13 @@ variables:
 
    gitblit_keys:
      admin_ssh: |
-        <public ssh key of administrator>
+         {{ admin_public_ssh }}
         
-#These are internal keys, and definitely should not be included below, you should override this. Pretty horrible...
      jenkins_ssh: |
-        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCbbBFe0CuSj75GOgbLBaj8qafFDEOhYFRX7vGFIy4oGqx848ivv4zAvzNltWNhpWW6stL4Tczvpa3tqQpuO6f7DFwwNdG5rtr7Ca9hXSx131Q9nIWBlZCnl2U014eMlzvRza2QcXJnFpAxycopfygnJqm/tjpfAGei3OCv9MWAQjOF/yzgtfVsFEeXcDCFJkJFEhvkzrMTD8vnEQbE+INOQ4yC8GAc6UHo1cbGk2aE6PrDnk/qa5AP3Z5m5HpTSNzzgSoe6jVpuiLOmV5eosFvUF0tusr3+7mXPtiQgh1cuq2EyZUA+cWxQYXoV8kxuuL3FZEsFWOZlijbEIEiRgbZ root@2f565e1ee99c
+        {{ jenkins_public_ssh }}
+        
    jenkins_private_key: |
-
-     -----BEGIN RSA PRIVATE KEY-----
-     MIIEowIBAAKCAQEAm2wRXtArko++RjoGywWo/KmnxQxDoWBUV+7xhSMuKBqsfOPI
-     r7+MwL8zZbVjYaVlurLS+E3M76Wt7akKbjun+wxcMDXRua7a+wmvYV0sdd9UPZyF
-     gZWQp5dlNNeHjJc70c2tkHFyZxaQMcnKKX8oJyapv7Y6XwBnotzgr/TFgEIzhf8s
-     4LX1bBRHl3AwhSZCRRIb5M6zEw/L5xEGxPiDTkOMgvBgHOlB6NXGxpNmhOj6w55P
-     6muQD92eZuR6U0jc84EqHuo1aboizpleXqLBb1BdLbrK9/u5lz7YkIIdXLqthMmV
-     APnFsUGF6FfJMbri9xWRLBVjmZYo2xCBIkYG2QIDAQABAoIBAHMGlQh9unG6zpB8
-     64AgDUQJb7AG9pqdh26Y2ci2E7f8ncHEd0eS1WHlX+2bRBUFave01yyLr+uAy+uD
-     WsPghN7o8+V+P1xUC58VOOYvJfOKuHbsu2X/QlK2WmG0TY6AcvZAaX7oZ0niSg9/
-     D46MnDP1ilXnUOX0j77aB7RRzEWyEbSXjGSDTft3seYXyHDnI048arCrpe0r8k7u
-     l5KHHfdfLa+MCO2FC8ogOKGaiE4DdjES4arS/YpQCnLbNbxDAwY/z3mAihN/BxST
-     Pm7S9rNZJ60qDA5JbSNiT6YvYO7lHEU+BjvH/2J7N1HjHYKKPCND378J6e/wg+SF
-     JuAEoj0CgYEAzhdvYSLWz2RLlvDu9kB6fLMi4Prjc7aXNuaN/kNcp6YHQDFdMHHi
-     7FipAIo2RVumF4krKzxh24ufx5Ff0v6QsMG4Azfmlw836haF3MxsQZT6kpIfyFlr
-     RJXjUBDWuuOune9mUaNDjgg5oCJkSSGmdoHiTsrr+tW4x4cn2jFxA3sCgYEAwQ9n
-     IlEZNaDPt+tbuXRWy2JsVeUA2OkSrpXRLqkVtYwY/jys6gAgs5yDzhMYE9+eRS4q
-     3LMfWTB3N8VSXItLp6rNGJpC0zvf3dKxCg4iLnmCsl07NSj08W+LY4zHqed36pqV
-     xXW3C5IGqzfitXD4Rbr1tlKFtiGS3a2GLYzytLsCgYAD7Xxo7IINh8rNAKB9PvNW
-     pw9WHFHzZZpyKGiyXNRKOabPuWEeSD1b5cCqyveH0NxUfH+/HjJ7Paj447Ng0Qsu
-     4zI/lXQmktqs8mrwr1Cs20r/Ohuy9MlPkE+5uehtvWMZjXN0wNjLvyph++XPYv3K
-     KmWGvOVMbYBNBS1kQib2OwKBgBPTSxoBDf+t1ebjKnYu9kLIhquDasTbmmmHRQXv
-     oyUTj/V7sZ4OCU2ogviEiXJxAkXEae5kDpIQIg3+G2kZfNlo9srR/I7IlUKoQjnw
-     HZ58J+m9HTlmTVEFzWCZsl9GP9A9s6elYPi1NC4c/RD42uX+PwFMFCMR640MJr1C
-     viHFAoGBAJO4OEWdQ3kVgC6bhBvoDGRObWEiDgzbaoQZBXMefZJiet3yh/TWeWAz
-     Kvbv8+/QwuRVbdYchoqko8qAMlU/r+EZtgQbdcgUy5y7lLIDL9xUq+iPGPhc0eMe
-     l89DtVbff4LG/wTg1JzkYMjY4jn+/IQnR9qpdnw8obgF1MqJnRc3
-     -----END RSA PRIVATE KEY-----
+        {{ jenkins_private_ssh }}
 
    repos:   
       'github.com/panoptix-za':

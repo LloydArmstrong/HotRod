@@ -2,4 +2,5 @@ fig.sh
 hacking/fig.yml
 hacking/repos
 hacking/masters
+localonly-*
 
