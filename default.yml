@@ -14,7 +14,9 @@ variables:
 
    gitblit_keys:
      admin_ssh: |
-        ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAwwny2qjfaaCtNyHrLpvXyF7QlUGKVnYiGWFoq73KouQ6BdVjJNlx4gv17TlOQJGFoiAxy6KrkuAtQ8KXWLtT4+7wNrk28mY2iYfEtwMSAxlLzjtSe3rRMuI4vxXqjsMs5KQy9qR2BKHMasvm34ne2CNRkIghd+gzcNQH6UqOalxr3FlvDva9cG8k6VTLVt0j48TFj1iIJWcBkVSfRDQcrMPMrC8HgYsAaFnuTfvsuhAqKt5+rpHbH7DMVE1eik9LkJoy8XyJm+eM1OAeQKpJzSpDTNWxmGJIVDBzvuPq5m2spBEx3oOhvGlINkgCPQ2WgM80WauIPqzYr4HxoCicWw== stephanbuys@oo0oo00o
+        <public ssh key of administrator>
+        
+#These are internal keys, and definitely should not be included below, you should override this. Pretty horrible...
      jenkins_ssh: |
         ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCbbBFe0CuSj75GOgbLBaj8qafFDEOhYFRX7vGFIy4oGqx848ivv4zAvzNltWNhpWW6stL4Tczvpa3tqQpuO6f7DFwwNdG5rtr7Ca9hXSx131Q9nIWBlZCnl2U014eMlzvRza2QcXJnFpAxycopfygnJqm/tjpfAGei3OCv9MWAQjOF/yzgtfVsFEeXcDCFJkJFEhvkzrMTD8vnEQbE+INOQ4yC8GAc6UHo1cbGk2aE6PrDnk/qa5AP3Z5m5HpTSNzzgSoe6jVpuiLOmV5eosFvUF0tusr3+7mXPtiQgh1cuq2EyZUA+cWxQYXoV8kxuuL3FZEsFWOZlijbEIEiRgbZ root@2f565e1ee99c
    jenkins_private_key: |
