@@ -2,17 +2,21 @@ evariables:
    - HOTROD_URL
 
 variables:
-   gitblit_keys:
-     admin_ssh: |
-         {{ admin_public_ssh }}
+  weave_shared_secret: {{ weave_shared_secret }}
+  weave_master_ip: {{ weave_master_ip }}
+  salt_user: {{ salt_user }}
+  
+  gitblit_keys:
+    admin_ssh: |
+      {{ admin_public_ssh }}
         
-     jenkins_ssh: |
-        {{ jenkins_public_ssh }}
+    jenkins_ssh: |
+      {{ jenkins_public_ssh }}
         
-   jenkins_private_key: |
-        {{ jenkins_private_ssh }}
+    jenkins_private_key: |
+      {{ jenkins_private_ssh }}
 
-   repos:   
+    repos:   
       'github.com/panoptix-za':
         - docker-cas
         - docker-coresaltmaster
@@ -58,6 +62,12 @@ templates:
     dst: local/kibanaproxy/local.yml
   - src: local/git/gitblit.properties.orig
     dst: local/git/gitblit.properties
+  - src: pillar/weave.sls.orig
+    dst: pillar/weave.sls
+  - src: salt/master.orig
+    dst: salt/master
+  - src: salt/master.d/weave.conf.orig
+    dst: salt/master.d/weave.conf
   - src: project/containers/admin/local.yml.orig
     dst: project/containers/admin/local.yml
          
