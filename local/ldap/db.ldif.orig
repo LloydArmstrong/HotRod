@@ -1,0 +1,97 @@
+dn: olcDatabase=hdb,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcHdbConfig
+olcDatabase: {1}hdb
+olcDbDirectory: /var/lib/ldap
+olcSuffix: dc=com
+olcLastMod: TRUE
+olcRootDN: cn=admin,dc=com
+olcRootPW:: {{ default_users.ldap_manager_pw }}
+olcDbCheckpoint: 512 30
+olcDbConfig: set_cachesize 0 2097152 0
+olcDbConfig: set_lk_max_objects 1500
+olcDbConfig: set_lk_max_locks 1500
+olcDbConfig: set_lk_max_lockers 1500
+olcDbIndex: objectClass eq
+olcDbIndex: uid eq,pres,sub
+olcDbIndex: cn eq
+
+dn: cn=module,cn=config
+objectClass: olcModuleList
+cn: module
+olcModulePath: /usr/lib/ldap
+olcModuleLoad: memberof
+
+dn: olcOverlay=memberof,olcDatabase={1}hdb,cn=config
+objectClass: olcMemberOf
+objectClass: olcOverlayConfig
+objectClass: olcConfig
+objectClass: top
+olcOverlay: memberof
+olcMemberOfDangling: ignore
+olcMemberOfRefInt: TRUE
+olcMemberOfGroupOC: groupOfNames
+olcMemberOfMemberAD: member
+olcMemberOfMemberOfAD: memberOf
+
+dn: dc=com
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+o: corp
+
+dn: ou=Groups,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: Groups
+
+dn: ou=Users,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: Users
+
+dn: ou=Admins,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: Admins
+
+{% for administrator in default_users['administrators'] -%}
+dn: cn={{ administrator.cn }},ou=Admins,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+cn: {{ administrator.cn }}
+sn: {{ administrator.surname }}
+userPassword:: {{ administrator.password }}
+
+
+{% endfor -%}
+{% for user in default_users['endusers'] -%}
+dn: cn={{ user.cn }},ou=Users,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+cn: {{ user.cn }}
+sn: {{ user.surname }}
+userPassword:: {{ user.password }}
+
+
+{% endfor -%}
+dn: cn=Admins,ou=Groups,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: Admins
+{% for administrator in default_users['administrators'] -%}
+member: cn={{ administrator.cn }},ou=Admins,dc=com
+{% endfor %}
+
+dn: olcDatabase={1}hdb,cn=config
+changetype: modify
+add: olcAccess
+olcAccess: to attrs=userPassword by dn="cn=admin,dc=com" write by anonymous auth by self write by * none
+olcAccess: to * by self write by users read by * none
+olcAccess: to attrs=shadowLastChange by self write by * read
+olcAccess: to dn.base="" by * read
+olcAccess: to * by dn="cn=admin,dc=com" write
+
+

@@ -1,0 +1,6 @@
+SIGNING_SECRET: {{ userauth.secret }}
+
+LDAP_URI: ldap://10.1.1.1:389
+LDAP_USERS_DN: ou=Users,dc=com
+LDAP_BIND_USER: {{ userauth.ldap_bind_user }}
+LDAP_BIND_PASSWORD: {{ userauth.ldap_bind_pw }}
