@@ -37,6 +37,7 @@ variables:
           - docker-logstash
           - docker-jdk
           - docker-rsyslog
+          - docker-coresaltmaster
 
    repos_no_dockerfile:   
       'github.com/panoptix-za':
@@ -48,20 +49,20 @@ variables:
  
 
 templates:
-#  - src: fig.sh.orig
-#    dst: fig.sh
   - src: hacking/repos.orig
     dst: hacking/repos
   - src: hacking/fig.yml.orig
     dst: hacking/fig.yml
-#  - src: loggerauth/loggerauth_kibanarproxy/reverse.conf.orig
-#    dst: loggerauth/loggerauth_kibanarproxy/reverse.conf
-#  - src: coreauth/corejenkinsrproxy/reverse.conf.orig
-#    dst: coreauth/corejenkinsrproxy/reverse.conf
-#  - src: core/coregitblit/admin.keys.orig
-#    dst: core/coregitblit/admin.keys
-#  - src: core/corejenkins/id_rsa.orig
-#    dst: core/corejenkins/id_rsa
-#  - src: core/corejenkins/jenkins.model.JenkinsLocationConfiguration.xml.orig
-#    dst: core/corejenkins/jenkins.model.JenkinsLocationConfiguration.xml
-
+  - src: local/ldap/db.ldif.orig
+    dst: local/ldap/db.ldif
+  - src: local/auth/local.yml.orig
+    dst: local/auth/local.yml
+  - src: local/adminauth/local.yml.orig
+    dst: local/adminauth/local.yml    
+  - src: local/kibanaproxy/local.yml.orig
+    dst: local/kibanaproxy/local.yml
+  - src: local/git/gitblit.properties.orig
+    dst: local/git/gitblit.properties
+  - src: project/containers/admin/local.yml.orig
+    dst: project/containers/admin/local.yml
+         
