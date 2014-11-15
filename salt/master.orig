@@ -12,7 +12,7 @@ pillar_roots:
 file_roots:
   base:
     - ./srv
-    - ./srv/hotrod
+    - ./project/hotrod
 
 user: {{ salt_user }}
 
