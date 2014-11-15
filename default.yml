@@ -16,36 +16,72 @@ variables:
     jenkins_private_key: |
       {{ jenkins_private_ssh }}
 
-    repos:   
-      'github.com/panoptix-za':
-        - docker-cas
-        - docker-coresaltmaster
-        - docker-elasticsearch
-        - docker-gitblit
-        - docker-gitolite
-        - docker-grand-ambassador
-        - docker-jdk
-        - docker-jenkins
-        - docker-kibana
-        - docker-ldap
-        - docker-logstash
-        - docker-modcasproxy
-        - docker-rsyslog
-        - docker-rundeck
-        - docker-saltmaster
-        - docker-sslrproxy
+  admin:
+    apiurl: http://{{ hotrod_server_ip }}:3000/api     
 
-   repos_no_dockerfile:   
-      'github.com/panoptix-za':
-        - cas-overlay
-        - mini-templates
-        - hotrod-admin
-        - hotrod-auth
-        - hotrod-components
-        - hotrod-jwt-proxy
-        - hotrod-renderer
-        - hotrod-reporting
-        - hotrod-template
+  userauth:
+    secret: {{ auth_shared_secret }}
+    url: http://{{ hotrod_server_ip }}:3001
+    ldap_bind_user: cn=admin,dc=com
+    ldap_bind_pw: hello
+    
+  adminauth:
+    secret: {{ auth_shared_secret }}
+    url: http://{{ hotrod_server_ip }}:3002  
+    ldap_bind_user: cn=admin,dc=com
+    # HINT: Use the unencrypted version for now. FIXME
+    ldap_bind_pw: h{{ manager_password }}
+        
+  addresses:
+    kibana: http://{{ hotrod_server_ip }}:4000
+    auth: http://{{ hotrod_server_ip }}:3001
+         
+  default_users:
+     ldap_manager_pw: {{ manager_password }}
+          
+     administrators:
+       - cn: {{ admin_user_name }}
+         firstname: {{ admin_user_firstname }}
+         surname: {{ admin_user_lastname }}
+         password: {{ admin_user_password }}
+              
+     endusers:
+       - cn: {{ hotrod_user_name }}
+         firstname: {{ hotrod_user_firstname }}
+         surname: {{ hotrod_user_lastname }}
+         password: {{ hotrod_user_password }}
+         # HINT: Add additional users as a YAML array      
+
+  repos:   
+    'github.com/panoptix-za':
+      - docker-cas
+      - docker-coresaltmaster
+      - docker-elasticsearch
+      - docker-gitblit
+      - docker-gitolite
+      - docker-grand-ambassador
+      - docker-jdk
+      - docker-jenkins
+      - docker-kibana
+      - docker-ldap
+      - docker-logstash
+      - docker-modcasproxy
+      - docker-rsyslog
+      - docker-rundeck
+      - docker-saltmaster
+      - docker-sslrproxy
+
+  repos_no_dockerfile:   
+    'github.com/panoptix-za':
+      - cas-overlay
+      - mini-templates
+      - hotrod-admin
+      - hotrod-auth
+      - hotrod-components
+      - hotrod-jwt-proxy
+      - hotrod-renderer
+      - hotrod-reporting
+      - hotrod-template
 
 templates:
   - src: hacking/repos.orig
@@ -70,4 +106,5 @@ templates:
     dst: salt/master.d/weave.conf
   - src: project/containers/admin/local.yml.orig
     dst: project/containers/admin/local.yml
+         
          
