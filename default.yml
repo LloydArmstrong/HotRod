@@ -36,6 +36,9 @@ variables:
     kibana: http://{{ hotrod_server_ip }}:4000
     auth: http://{{ hotrod_server_ip }}:3001
          
+  # HINT:
+  # Use slappasswd -h {SSHA} -s mypassword | base64
+  # to generate the passwords for the users
   default_users:
      ldap_manager_pw: {{ manager_password }}
           
