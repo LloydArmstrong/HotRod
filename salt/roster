@@ -1,0 +1,3 @@
+# Roster File for salt
+# can use bin/cloud_updateroster.sh to update, you will need to set up the 
+# rest of salt cloud

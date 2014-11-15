@@ -1,0 +1,18 @@
+#HOTROD SALT
+
+root_dir: ./salt/
+pki_dir: pki/master
+cachedir: run/master
+sock_dir: ///tmp
+
+pillar_roots:
+  base:
+    - ./pillar  
+    
+file_roots:
+  base:
+    - ./srv
+    - ./srv/hotrod
+
+user: {{ salt_user }}
+
