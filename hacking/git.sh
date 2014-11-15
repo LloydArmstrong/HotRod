@@ -1,5 +1,5 @@
 #!/bin/bash
-# set -e 
+set -e 
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
@@ -7,6 +7,7 @@ cd $DIR
 source $DIR/repos
 mkdir -p $DIR/masters
 cd $DIR/masters
+echo "`pwd`"
 
 for i in "${repos[@]}"
 do

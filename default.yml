@@ -2,16 +2,6 @@ evariables:
    - HOTROD_URL
 
 variables:
-   figsubprojects:
-      - common
-      - core
-      - coreauth
-      - logger
-      - loggercache
-      - loggertransport
-      - loggerui
-      - loggerauth
-
    gitblit_keys:
      admin_ssh: |
          {{ admin_public_ssh }}
@@ -24,29 +14,34 @@ variables:
 
    repos:   
       'github.com/panoptix-za':
-          - docker-saltmaster
-          - docker-gitblit
-          - docker-grand-ambassador
-          - docker-jenkins
-          - docker-rundeck
-          - docker-kibana
-          - docker-sslrproxy
-          - docker-modcasproxy
-          - docker-cas
-          - docker-ldap
-          - docker-logstash
-          - docker-jdk
-          - docker-rsyslog
-          - docker-coresaltmaster
+        - docker-cas
+        - docker-coresaltmaster
+        - docker-elasticsearch
+        - docker-gitblit
+        - docker-gitolite
+        - docker-grand-ambassador
+        - docker-jdk
+        - docker-jenkins
+        - docker-kibana
+        - docker-ldap
+        - docker-logstash
+        - docker-modcasproxy
+        - docker-rsyslog
+        - docker-rundeck
+        - docker-saltmaster
+        - docker-sslrproxy
 
    repos_no_dockerfile:   
       'github.com/panoptix-za':
-          - HotRod
-          - hotrod-auth
-          - hotrod-admin
-          - cas-overlay
-          - mini-templates
- 
+        - cas-overlay
+        - mini-templates
+        - hotrod-admin
+        - hotrod-auth
+        - hotrod-components
+        - hotrod-jwt-proxy
+        - hotrod-renderer
+        - hotrod-reporting
+        - hotrod-template
 
 templates:
   - src: hacking/repos.orig
