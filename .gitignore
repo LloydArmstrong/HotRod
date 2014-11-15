@@ -1,0 +1,13 @@
+pillar/weave.sls
+salt/master
+salt/cacheinventory
+salt/cloud.*
+srv/external/
+fig.sh
+hacking/fig.yml
+hacking/repos
+hacking/masters
+localonly-*
+project/*/
+local/
+
