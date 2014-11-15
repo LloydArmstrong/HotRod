@@ -107,7 +107,3 @@ templates:
     dst: salt/master
   - src: salt/master.d/weave.conf.orig
     dst: salt/master.d/weave.conf
-  - src: project/containers/admin/local.yml.orig
-    dst: project/containers/admin/local.yml
-         
-         
