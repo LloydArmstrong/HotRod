@@ -5,9 +5,7 @@ pwd=$(basename `pwd`)
 echo "This is $pwd/$me" 1>&2
 set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-HOTROD_ROOT="$( cd $DIR/../.. && pwd )"
-
+DIR=$DIR/..
 cd $DIR
 
 time salt-ssh \* -i $@ state.highstate
