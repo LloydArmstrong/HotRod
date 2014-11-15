@@ -10,30 +10,9 @@ cd $DIR
 
 # Grab the latest hotrod-composition for our git server
 echo "HotRod Composition..."
-[ -d $DIR/cloudops/srv/external/git ] || {
-  mkdir $DIR/cloudops/srv/external/git
-  cd $DIR/cloudops/srv/external/git
-  git clone --bare https://bitbucket.org/hotrodcore/hotrod-composition.git hotrod-composition.git 
-  }
-
 [ -d $DIR/project/hotrod ] || {
   cd $DIR/project
-  git clone $DIR/cloudops/srv/external/git/hotrod-composition.git hotrod
-}
-
-[ -d $DIR/cloudops/srv/hotrod ] || {
-  cd $DIR/cloudops/srv
-  ln -s $DIR/project/hotrod
-}
-
-[ -d $DIR/cloudops/srv/local ] || {
-  cd $DIR/cloudops/srv
-  ln -sf $DIR/local 
-}
-
-[ -d $DIR/cloudops/srv/project ] || {
-  cd $DIR/cloudops/srv
-  ln -sf $DIR/project
+  git clone https://github.com/panoptix-za/hotrod-composition.git hotrod
 }
 
 cd $DIR
