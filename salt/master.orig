@@ -13,6 +13,7 @@ file_roots:
   base:
     - ./srv
     - ./project/hotrod
+    - ./
 
 user: {{ salt_user }}
 
