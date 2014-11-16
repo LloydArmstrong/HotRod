@@ -1,4 +1,5 @@
 default.yml
+salt/master.d/weave.conf
 pillar/weave.sls
 salt/master
 salt/cacheinventory

@@ -7,3 +7,8 @@
 5) run ./bin/bootstrap.sh
 6) run ./bin/cloud_highstate.sh
 
+# Do something useful
+
+1) Create:
+   project/hotrod-admin.git 
+   project/hotrod-projectfs.git 
