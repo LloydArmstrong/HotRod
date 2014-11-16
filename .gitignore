@@ -1,3 +1,4 @@
+default.yml
 pillar/weave.sls
 salt/master
 salt/cacheinventory
