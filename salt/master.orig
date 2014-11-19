@@ -11,8 +11,9 @@ pillar_roots:
     
 file_roots:
   base:
-    - ./srv
     - ./project/hotrod
+    - ./local  
+    - ./srv
     - ./
 
 user: {{ salt_user }}
