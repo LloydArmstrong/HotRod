@@ -94,6 +94,8 @@ variables:
       - hotrod-template
 
 templates:
+  - src: init.sh.orig
+    dst: init.sh
   - src: hacking/repos.orig
     dst: hacking/repos
   - src: hacking/fig.yml.orig
