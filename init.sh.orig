@@ -24,7 +24,7 @@ if [ -d $DIR/project/admin ]; then
   git pull
 else
   cd $DIR/project
-  git clone {{ hotrod-admin.repo }} admin
+  git clone {{ hotrod_admin }} admin
 fi
 
 echo "HotRod ProjectFS..."
@@ -33,7 +33,7 @@ if [ -d $DIR/project/projectfs ]; then
   git pull
 else
   cd $DIR/project
-  git clone {{ hotrod-projectfs.repo }} projectfs
+  git clone {{ hotrod_projectfs }} projectfs
 fi
 
 
