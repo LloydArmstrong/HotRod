@@ -6,6 +6,13 @@ variables:
   weave_master_ip: {{ weave_master_ip }}
   salt_user: {{ salt_user }}
   
+  project_init_repos:
+    hotrod-admin: 
+      repo: {{ hotrod-admin }}
+      branch: master
+    hotrod-projectfs:
+      repo: {{ hotrod-projectfs }}
+  
   gitblit_keys:
     admin_ssh: |
       {{ admin_public_ssh }}
