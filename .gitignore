@@ -12,4 +12,7 @@ hacking/masters
 localonly-*
 project/*/
 local/
+salt/pki/*
+salt/run/*
+salt/roster
 
