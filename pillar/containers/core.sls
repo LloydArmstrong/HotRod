@@ -25,7 +25,7 @@ saltmaster:
     - file: salt://coresaltmaster/Dockerfile
     - file: salt://coresaltmaster/hotrod-master.conf
     - file: salt://coresaltmaster/remote_pillar.conf
-    - file: salt:///coresaltmaster/remote_states.conf
+    - file: salt://coresaltmaster/remote_states.conf
     - dir: salt://local    
   image: panoptix/saltmaster:core
   links:
