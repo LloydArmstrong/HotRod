@@ -10,5 +10,5 @@ base:
   'hotrodmaster-*':
      - weave.master
      - cluster.build
-     - cluster.figure
+     - cluster.run
      
