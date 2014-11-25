@@ -1,3 +1,5 @@
+init.sh
+project/.mu_repo
 default.yml
 salt/master.d/weave.conf
 pillar/weave.sls
