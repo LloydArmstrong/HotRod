@@ -27,4 +27,4 @@ add_gitblit_host:
     - name: |
         echo "10.1.254.2 gitblit" >> /etc/hosts
     - unless: |
-        cat /etc/hosts | grep 10.1.254.2
+        cat /etc/hosts | grep 10.1.254.200

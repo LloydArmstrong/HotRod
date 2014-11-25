@@ -3,7 +3,7 @@
 launch_weave_peer:
   cmd.run:
     - name: |
-        /usr/local/bin/weave launch {{ grains['weave_ip'] }}/8 -password {{ pillar['weave']['shared_secret'] }} \
+        /usr/local/bin/weave launch -password {{ pillar['weave']['shared_secret'] }} \
         {{ grains['weave_master_ip'] }} 
     - unless: docker ps | egrep "\sweave\s+$"
 
@@ -12,5 +12,5 @@ launch_weave_peer:
 attach_weave_minion:
   cmd.run:
     - name: |
-        /usr/local/bin/weave expose 172.16.{{ grains['weave_sub'] }}.{{ grains['weave_num'] }}/24
+        /usr/local/bin/weave expose 10.1.{{ grains['weave_sub'] }}.{{ grains['weave_num'] }}/24
     - unless: ifconfig weave | grep 'inet addr'

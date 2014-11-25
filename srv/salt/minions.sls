@@ -25,9 +25,9 @@ saltmaster-config:
 add_coresaltmaster_host:
   cmd.run:
     - name: |
-        echo "10.1.254.1 coresaltmaster" >> /etc/hosts
+        echo "10.1.254.254 coresaltmaster" >> /etc/hosts
     - unless: |
-        cat /etc/hosts | grep 10.1.254.1
+        cat /etc/hosts | grep 10.1.254.254
     - require_in: 
        - service: salt-minion-server
     
