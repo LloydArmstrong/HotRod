@@ -25,6 +25,6 @@ show_ssh_keys:
 add_gitblit_host:
   cmd.run:
     - name: |
-        echo "172.16.0.200 gitblit" >> /etc/hosts
+        echo "10.1.254.2 gitblit" >> /etc/hosts
     - unless: |
-        cat /etc/hosts | grep 172.16.0.200
+        cat /etc/hosts | grep 10.1.254.2

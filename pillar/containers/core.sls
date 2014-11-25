@@ -19,7 +19,7 @@ gitblit:
     - jenkins:jenkins  
   ip:
    - 10.1.1.5
-   - 172.16.0.200
+   - 10.1.254.2
        
 saltmaster:
   build:
@@ -33,7 +33,7 @@ saltmaster:
     - gitblit:gitblit      
   ip:
    - 10.1.1.6
-   - 172.16.0.254
+   - 10.1.254.1
      
 jenkins:
   image: panoptix/jenkins
