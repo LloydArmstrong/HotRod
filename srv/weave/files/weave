@@ -6,7 +6,7 @@ usage() {
     echo "weave launch     [-password <password>] <peer> ..."
     echo "weave launch-dns <cidr>"
     echo "weave connect    <peer>"
-    echo "weave run        <cidr> <docker run args> ..."
+    echo "weave run        [--with-dns] <cidr> <docker run args> ..."
     echo "weave start      <cidr> <container_id>"
     echo "weave attach     <cidr> <container_id>"
     echo "weave detach     <cidr> <container_id>"
@@ -139,17 +139,6 @@ destroy_bridge() {
     run_iptables -t nat -X WEAVE >/dev/null 2>&1 || true
 }
 
-docker_ip() {
-    if ! DOCKERIP=$(docker inspect --format='{{ .NetworkSettings.IPAddress }}' $CONTAINER_NAME 2>/dev/null) ; then
-        echo "Weave is not running." >&2
-        exit 1
-    fi
-    if [ -z "$DOCKERIP" ] ; then
-        echo "Weave is not running." >&2
-        exit 1
-    fi
-}
-
 # the following borrows from https://github.com/jpetazzo/pipework
 
 # run args $2 $3 ... as a command in the network namespace of container $1
@@ -270,19 +259,28 @@ detach() {
 # Call url $4 on container $2 at port $3 with http verb $1
 http_call() {
     http_verb="$1"
-    if ! DOCKERIP=$(docker inspect --format='{{ .NetworkSettings.IPAddress }}' $2 2>/dev/null) ; then
-        echo "$2 is not running." >&2
+    if ! status=$(docker inspect --format='{{ .State.Running }} {{ .NetworkSettings.IPAddress }}' $2 2>/dev/null); then
+        echo "$2 container is not present; have you launched it?" >&2
         exit 1
     fi
-    if [ -z "$DOCKERIP" ] ; then
-        echo "$2 is not running." >&2
-        exit 1
-    fi
+    case "$status" in
+        "true ")
+            echo "$2 container has no IP address; is Docker networking enabled?" >&2
+            exit 1
+            ;;
+        true*)
+            ip="${status#true }"
+            ;;
+        *)
+            echo "$2 container is not running." >&2
+            exit 1
+            ;;
+    esac
     port="$3"
     url="$4"
     shift 4
     if command_exists curl ; then
-        curl -s -X $http_verb "$@" http://$DOCKERIP:$port$url
+        curl -s -X $http_verb "$@" http://$ip:$port$url
     else
         echo "Cannot find curl, which is required for this operation." >&2
         exit 1
@@ -327,6 +325,22 @@ check_not_running() {
 
 container_weave_addrs() {
     ip netns exec $NETNS ip addr show dev $CONTAINER_IFNAME
+}
+
+uname -s -r | sed -n 's|^\([^ ]*\) \([0-9][0-9]*\)\.\([0-9][0-9]*\).*|\1 \2 \3|p' | {
+    if ! read sys maj min ; then
+      echo "ERROR: Unable to parse operating system version `uname -s -r`" >&2
+      exit 1
+    fi
+
+    if [ "$sys" != 'Linux' ] ; then
+        echo "ERROR: Operating systems other than Linux are not supported (you have `uname -s -r`)" >&2
+        exit 1
+    fi
+
+    if ! [ \( "$maj" -eq 3 -a "$min" -ge 5 \) -o "$maj" -gt 3 ] ; then
+        echo "WARNING: Linux kernel version 3.5 or newer is required (you have ${maj}.${min})" >&2
+    fi
 }
 
 case "$COMMAND" in
@@ -392,21 +406,24 @@ case "$COMMAND" in
         ;;
     run)
         [ $# -gt 0 ] || usage
+        if [ "$1" = "--with-dns" ] ; then
+            shift 1
+            DNS_ARG=$(docker inspect --format '--dns {{ .NetworkSettings.IPAddress }}'" --link $DNS_CONTAINER_NAME:$DNS_CONTAINER_NAME" $DNS_CONTAINER_NAME 2>/dev/null) || true
+            DNS_SEARCH_ARG="--dns-search=."
+            for arg in $@; do
+                case $arg in
+                    --dns-search=*)
+                        DNS_SEARCH_ARG=""
+                        ;;
+                    *)
+                        ;;
+                esac;
+            done
+        fi
         validate_cidr $1
         CIDR=$1
         shift 1
         create_bridge
-        DNS_ARG=$(docker inspect --format '--dns {{ .NetworkSettings.IPAddress }}'" --link $DNS_CONTAINER_NAME:$DNS_CONTAINER_NAME" $DNS_CONTAINER_NAME 2>/dev/null) || true
-        DNS_SEARCH_ARG="--dns-search=."
-        for arg in $@; do
-           case $arg in
-               --dns-search=*)
-                   DNS_SEARCH_ARG=""
-                   ;;
-               *)
-                   ;;
-           esac;
-        done
         CONTAINER=$(docker run $DNS_ARG $DNS_SEARCH_ARG -d "$@" | tail -n 1)
         with_container_netns $CONTAINER attach $CIDR >/dev/null
         tell_dns PUT $CONTAINER $CIDR
