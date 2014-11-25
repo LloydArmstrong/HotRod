@@ -22,9 +22,8 @@ show_ssh_keys:
         cat ~/.ssh/id_rsa.pub   
     - onlyif: ls ~/.ssh/id_rsa.pub
         
-add_gitblit_host:
+add_host_gitblit:
   cmd.run:
     - name: |
         echo "10.1.254.200 gitblit" >> /etc/hosts
-    - unless: |
-        cat /etc/hosts | grep 10.1.254.200
+    - unless: cat /etc/hosts | grep 10.1.254.200

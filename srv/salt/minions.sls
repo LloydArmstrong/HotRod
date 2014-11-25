@@ -22,12 +22,11 @@ saltmaster-config:
     - mode: 0400
     - source: salt://salt/files/saltmaster.conf
     
-add_coresaltmaster_host:
+add_host_coresaltmaster:
   cmd.run:
     - name: |
         echo "10.1.254.254 coresaltmaster" >> /etc/hosts
-    - unless: |
-        cat /etc/hosts | grep 10.1.254.254
+    - unless: cat /etc/hosts | grep 10.1.254.254
     - require_in: 
        - service: salt-minion-server
     
