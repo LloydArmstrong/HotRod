@@ -34,6 +34,8 @@ saltmaster:
   ip:
    - 10.1.1.6
    - 10.1.254.254
+  expose:
+   - 10.1.254.1
      
 jenkins:
   image: panoptix/jenkins
