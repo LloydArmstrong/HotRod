@@ -29,6 +29,9 @@ saltmaster:
     - file: salt://coresaltmaster/remote_states.conf
     - dir: salt://local    
   image: panoptix/saltmaster:core
+  ports:
+    - 127.0.0.1:4505:4505
+    - 127.0.0.1:4506:4506 
   links:
     - gitblit:gitblit      
   ip:
