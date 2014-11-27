@@ -9,8 +9,8 @@ launch_weave_peer:
 
 {% endif %}
 
-attach_weave_minion:
-  cmd.run:
-    - name: |
-        /usr/local/bin/weave expose 10.1.{{ grains['weave_sub'] }}.{{ grains['weave_num'] }}/24
-    - unless: ifconfig weave | grep 'inet addr'
+#attach_weave_minion:
+#  cmd.run:
+#    - name: |
+#        /usr/local/bin/weave expose 10.1.{{ grains['weave_sub'] }}.{{ grains['weave_num'] }}/24
+#    - unless: ifconfig weave | grep 'inet addr'
