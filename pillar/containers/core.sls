@@ -15,11 +15,10 @@ gitblit:
   ports:
     - 127.0.0.1:8443:443
   links:
-    - ldapauth:ldapauth
-    - jenkins:jenkins  
+    - 10.1.1.1:ldapauth
+    - 10.1.1.7:jenkins  
   ip:
    - 10.1.1.5
-   - 10.1.254.200
        
 saltmaster:
   build:
@@ -33,18 +32,17 @@ saltmaster:
     - 127.0.0.1:4505:4505
     - 127.0.0.1:4506:4506 
   links:
-    - gitblit:gitblit      
+    - 10.1.1.5:gitblit      
   ip:
    - 10.1.1.6
-   - 10.1.254.254
-  expose:
-   - 10.1.254.1
+#  expose:
+#   - 10.1.254.1
      
 jenkins:
   image: panoptix/jenkins
   links:
-    - gitblit:gitblit
-    - saltmaster:saltmaster
+    - 10.1.1.5:gitblit
+    - 10.1.1.6:saltmaster
   ip:
     - 10.1.1.7
      
