@@ -14,6 +14,7 @@ gitblit:
   image: panoptix/gitblit:core
   ports:
     - 127.0.0.1:8443:443
+    - 127.0.0.1:9418:9418
   links:
     - 10.1.1.1:ldapauth
     - 10.1.1.7:jenkins  
