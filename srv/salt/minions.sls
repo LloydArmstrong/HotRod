@@ -26,7 +26,7 @@ add_host_coresaltmaster:
   cmd.run:
     - name: |
         echo "127.0.0.1 coresaltmaster" >> /etc/hosts
-    - unless: cat /etc/hosts | grep 127.0.0.1
+    - unless: cat /etc/hosts | grep '127.0.0.1 coresaltmaster'
     - require_in: 
        - service: salt-minion-server
     
