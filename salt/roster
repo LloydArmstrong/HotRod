@@ -3,7 +3,7 @@
 # rest of salt cloud
 
 hotrodmaster-0-1:
-   host: 95.85.27.152
+   host: 192.168.0.1
    user: root
    sudo: False
    grains:
