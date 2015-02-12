@@ -41,12 +41,12 @@ saltmaster:
 #  expose:
 #   - 10.1.254.1
      
-jenkins:
-  image: panoptix/jenkins
-  links:
-    - 10.1.1.5:gitblit
-    - 10.1.1.6:saltmaster
-  ip:
-    - 10.1.1.7
-     
+#jenkins:
+#  image: panoptix/jenkins
+#  links:
+#    - 10.1.1.5:gitblit
+#    - 10.1.1.6:saltmaster
+#  ip:
+#    - 10.1.1.7
+#     
      
