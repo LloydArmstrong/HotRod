@@ -8,6 +8,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=$DIR/..
 cd $DIR
 
-time salt-ssh \* state.sls cluster.build 
-time salt-ssh \* state.sls cluster.run 
-time salt-ssh \* state.sls cluster.network
+time salt-ssh \* -l info state.sls cluster.build 
+time salt-ssh \* -l info state.sls cluster.run 
+time salt-ssh \* -l info state.sls cluster.network

@@ -8,5 +8,5 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=$DIR/..
 cd $DIR
 
-time salt-ssh \* -i $@ state.highstate
+time salt-ssh \* -l info -i $@ state.highstate
 
