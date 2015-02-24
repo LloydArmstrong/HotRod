@@ -12,7 +12,7 @@ HERE BE DRAGONS, HotRod is not ready for production use unless you know what you
 ### Getting Started
 
 - Install saltstack (version 2014.7 or greater, you need salt-ssh)
-- Customise the default.yml file and place it in the project root folder.
+- Customise the docs/default.yml file and place it in the project root folder.
 - run ./mini.py
 - Ensure salt has ssh access set up (involves setting up salt/roster file)
 - run ./init.sh
