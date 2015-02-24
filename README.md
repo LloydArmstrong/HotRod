@@ -9,54 +9,28 @@ It is under heavy development and should be handled with care.
 HERE BE DRAGONS, HotRod is not ready for production use unless you know what you're doing, considered pre-Alpha. There are known security issues (static passwords, static SSL keys, badness), which can, will and should be fixed.
 
 
-Clone the sourcecode on a server running Docker:
+### Getting Started
 
-    git clone https://github.com/panoptix-za/HotRod.git
-
-If HotRod is set to run publicy there is some limited support to attempt an auto-bootstrap. Just issue:
-
-    cd HotRod
-    sudo ./hotrod.sh
-
-If this fails set the environment variable HOTROD_URL to an appropriate value.
-
-    export HOTROD_URL="https://192.168.0.1"
-   
-> Only https on port 443 is supported at this time.
+- Install saltstack (version 2014.7 or greater, you need salt-ssh)
+- Customise the default.yml file and place it in the project root folder.
+- run ./mini.py
+- Ensure salt has ssh access set up (involves setting up salt/roster file)
+- run ./init.sh
+- run ./bin/bootstrap.sh
+- run ./bin/cloud_highstate.sh
  
-### What is HotRod
+### What is HotRod?
 
-- Opinionated Docker PaaS
-- Idiomatic (docker, Consul, http)
-  - consist of micro services (easy to iterate)
-- CI/CD good to go
-- Not a Heroku clone (never used it), its for infrastructure people
-- Loosely coupled
-- Go  (no dependencies, concurrent, same as Consul and Docker)    
-- Turnkey (metrics, logging and orchestration out of the box)
-- Modern (containers, web services, 
-- DevOps pipeline OSS and in public
+HotRod is an easy way to get an analytics platform (Elasticsearch, Kibana, Logstash) running in a modern fashion. It works with Docker and Weave.
 
-### HotRod/Toadie (Coming next)
+### Architecture Components
 
-    - /.../projects/... (Actual customer instances)
-    - /.../teams/.../ (Functional groups - inherited by projects)
-    - /.../.../formation/....
-        - nodes per instance (shared log volumes, scaling characteristics, 
-    - /.../.../containers/.../attributes (
- 
-### DevOps
-
-- Use the 'shell' to spin up HotRod locally (fig up)
-
-### Architecture
-
-- External/Public Ports are published (preferably) using ambassadors, not binds to specific containers (SSL by default)
-
-### Features
-
-- Private registry for project images
-- Rundeck access to ops functions (audited and secured)
+- Saltstack
+- Docker
+- Weave
+- Elasticsearch
+- Rsyslog
+- Kibana
 
 ### License
 
@@ -81,7 +55,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-<<<<<<< HEAD
-
-=======
->>>>>>> 6b1a6ea5f9ba1a025a5ed99af9f3e6f599a0145a
