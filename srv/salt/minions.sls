@@ -51,3 +51,8 @@ salt-minion-server:
     - watch:
       - file: saltmaster-config
       - cmd: salt-install-sh-run
+
+salt-minion-enabled:
+  service.enabled:
+    - name: salt-minion
+    

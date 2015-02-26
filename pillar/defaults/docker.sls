@@ -1,6 +1,6 @@
 run:
   detach: 'true'
   
-create: []
-#  restart: on-failure
+create: 
+  restart: 'no'
     
