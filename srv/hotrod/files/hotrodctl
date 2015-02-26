@@ -6,20 +6,12 @@ set -e
 usage() {
     echo "Usage:"
     echo ""
-    echo "hotrod update"
-    echo ""
-    echo "hotrod bbox accept-all"
-    echo "hotrod bbox update-all"    
-    echo "hotrod bbox reboot-all"
-    echo ""
-    echo "hotrod bbox status"    
-    echo ""
-    echo "hotrod bbox salt-master"
+    echo "hotrodctl start"
+    echo "hotrodctl stop"    
+    echo "hotrodctl update"
     echo ""
     exit 1
 }
-
-COMMAND=$1
 
 [ $# -gt 0 ] || usage
 
@@ -27,80 +19,24 @@ COMMAND=$1
 
 shift 1
 
-EXTCID=$(docker ps | grep hotrod | grep extsaltmaster | cut -f1 -d" ")
-
-
 startcore() {
-  /usr/local/bin/hotrod_start_corehotrod.sh  
-  /usr/local/bin/hotrod_network_corehotrod.sh    
+  /usr/local/bin/start_corehotrod.sh  
+  /usr/local/bin/network_corehotrod.sh    
 }
 
 startother() {
-  /usr/local/bin/hotrod_start_hotrod.sh
-  /usr/local/bin/hotrod_network_hotrod.sh  
+  if [ -f /usr/local/bin/start_hotrod.sh ]; then 
+    /usr/local/bin/start_hotrod.sh
+    /usr/local/bin/network_hotrod.sh  
+  else
+    echo "Starting hotrod containers using 'update'"
+    update
+  fi
 }
 
 quickstart() {
   startcore
   startother
-}
-
-bboxacceptall() {
-  docker exec $EXTCID /usr/bin/salt-key -A
-}
-
-bboxaccept() {
-  docker exec $EXTCID /usr/bin/salt-key -a $1
-}
-
-bboxrebootall() {
-  docker exec $EXTCID /usr/bin/salt \* -t 15 system.reboot
-}
-
-extsaltmaster() {
-  docker exec -it $EXTCID bash
-}
-
-bboxupdateall() {
-  echo "This can take up to 5 minutes, press CTRL+C to stop waiting"
-  docker exec $EXTCID /usr/bin/salt \* -t 300 state.highstate
-}
-
-bboxonline() {
-  docker exec $EXTCID /usr/bin/salt-run -t 30 manage.status
-}
-
-#  [ $# -gt 1 ] || usage
-
-bbox() {
-  CMD=$1
-  shift 1
-  case "$CMD" in
-    accept)
-        bboxaccept $1
-        ;;
-    accept-all)
-        bboxacceptall 
-        ;;
-    reboot-all)
-        bboxrebootall
-        ;;
-    salt-master)
-        extsaltmaster
-        ;;
-    update-all)
-        bboxupdateall
-        bboxrebootall
-        ;;    
-    status)
-        bboxonline
-        ;;    
-        
-    *)
-        echo "Unknown bbox command '$CMD'" >&2
-        usage
-        ;;
-  esac 
 }
 
 update() {
@@ -115,12 +51,12 @@ update() {
 }
 
 case "$COMMAND" in
-    bbox)
-        CMD=$1
-        BBOX=$2
-        shift 1
-        bbox $CMD $BBOX
+    start)
+        quickstart
         ;;
+    stop)
+      docker stop $(docker ps | grep hotrod | cut -f1 -d" ")
+      ;;
     update)
         update
         ;;
