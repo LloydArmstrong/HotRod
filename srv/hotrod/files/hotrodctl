@@ -29,6 +29,22 @@ shift 1
 
 EXTCID=$(docker ps | grep hotrod | grep extsaltmaster | cut -f1 -d" ")
 
+
+startcore() {
+  /usr/local/bin/hotrod_start_corehotrod.sh  
+  /usr/local/bin/hotrod_network_corehotrod.sh    
+}
+
+startother() {
+  /usr/local/bin/hotrod_start_hotrod.sh
+  /usr/local/bin/hotrod_network_hotrod.sh  
+}
+
+quickstart() {
+  startcore
+  startother
+}
+
 bboxacceptall() {
   docker exec $EXTCID /usr/bin/salt-key -A
 }
