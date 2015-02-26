@@ -1,0 +1,115 @@
+#!/bin/sh
+set -e
+
+#Inspired by https://github.com/zettio/weave
+
+usage() {
+    echo "Usage:"
+    echo ""
+    echo "hotrod update"
+    echo ""
+    echo "hotrod bbox accept-all"
+    echo "hotrod bbox update-all"    
+    echo "hotrod bbox reboot-all"
+    echo ""
+    echo "hotrod bbox status"    
+    echo ""
+    echo "hotrod bbox salt-master"
+    echo ""
+    exit 1
+}
+
+COMMAND=$1
+
+[ $# -gt 0 ] || usage
+
+COMMAND=$1
+
+shift 1
+
+EXTCID=$(docker ps | grep hotrod | grep extsaltmaster | cut -f1 -d" ")
+
+bboxacceptall() {
+  docker exec $EXTCID /usr/bin/salt-key -A
+}
+
+bboxaccept() {
+  docker exec $EXTCID /usr/bin/salt-key -a $1
+}
+
+bboxrebootall() {
+  docker exec $EXTCID /usr/bin/salt \* -t 15 system.reboot
+}
+
+extsaltmaster() {
+  docker exec -it $EXTCID bash
+}
+
+bboxupdateall() {
+  echo "This can take up to 5 minutes, press CTRL+C to stop waiting"
+  docker exec $EXTCID /usr/bin/salt \* -t 300 state.highstate
+}
+
+bboxonline() {
+  docker exec $EXTCID /usr/bin/salt-run -t 30 manage.status
+}
+
+#  [ $# -gt 1 ] || usage
+
+bbox() {
+  CMD=$1
+  shift 1
+  case "$CMD" in
+    accept)
+        bboxaccept $1
+        ;;
+    accept-all)
+        bboxacceptall 
+        ;;
+    reboot-all)
+        bboxrebootall
+        ;;
+    salt-master)
+        extsaltmaster
+        ;;
+    update-all)
+        bboxupdateall
+        bboxrebootall
+        ;;    
+    status)
+        bboxonline
+        ;;    
+        
+    *)
+        echo "Unknown bbox command '$CMD'" >&2
+        usage
+        ;;
+  esac 
+}
+
+update() {
+  echo "Build, Run, Network... (please wait)"
+  CID=$(docker ps | grep core | grep saltmaster | cut -f1 -d" ")
+  docker exec $CID /usr/bin/salt-run fileserver.update
+  docker exec $CID /usr/bin/salt \* -t 600 state.sls cluster.build
+  docker exec $CID /usr/bin/salt \* -t 600 state.sls cluster.run
+  docker exec $CID /usr/bin/salt \* -t 600 state.sls cluster.network
+  echo ""
+  echo "Build, Run, Network... (DONE)"
+}
+
+case "$COMMAND" in
+    bbox)
+        CMD=$1
+        BBOX=$2
+        shift 1
+        bbox $CMD $BBOX
+        ;;
+    update)
+        update
+        ;;
+    *)
+        echo "Unknown hotrod command '$COMMAND'" >&2
+        usage
+        ;;
+esac        
