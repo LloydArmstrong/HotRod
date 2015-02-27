@@ -8,7 +8,9 @@ usage() {
     echo ""
     echo "hotrodctl start"
     echo "hotrodctl stop"    
+    echo "hotrodctl status"        
     echo "hotrodctl update"
+    echo "hotrodctl project-setup"
     echo ""
     exit 1
 }
@@ -39,6 +41,17 @@ quickstart() {
   startother
 }
 
+projtop() {
+  CID=$(docker ps | grep core | grep saltmaster | cut -f1 -d" ")
+  docker exec $CID /usr/bin/salt-run fileserver.update
+  docker exec $CID /usr/bin/salt \* -t 600 state.highstate
+  
+}
+
+status() {
+  docker ps | grep hotrod
+}
+
 update() {
   echo "Build, Run, Network... (please wait)"
   CID=$(docker ps | grep core | grep saltmaster | cut -f1 -d" ")
@@ -60,6 +73,13 @@ case "$COMMAND" in
     update)
         update
         ;;
+    project-setup)
+        projtop
+        ;;      
+    status)
+        status
+        ;;
+        
     *)
         echo "Unknown hotrod command '$COMMAND'" >&2
         usage
