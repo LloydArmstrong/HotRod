@@ -6,7 +6,7 @@ olcDbDirectory: /var/lib/ldap
 olcSuffix: dc=com
 olcLastMod: TRUE
 olcRootDN: cn=admin,dc=com
-olcRootPW:: {{ default_users.ldap_manager_pw }}
+olcRootPW: {{ default_users.ldap_manager_pw }}
 olcDbCheckpoint: 512 30
 olcDbConfig: set_cachesize 0 2097152 0
 olcDbConfig: set_lk_max_objects 1500
