@@ -10,6 +10,3 @@ base:
 
   'hotrodmaster-*':
      - weave.master
-     - cluster.build
-     - cluster.run
-     - cluster.network
