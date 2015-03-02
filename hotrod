@@ -1,0 +1,204 @@
+#!/bin/bash
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
+
+#Inspired by, bit copied from https://github.com/zettio/weave
+
+usage() {
+    echo "Usage:"
+    echo "hotrod setup"
+    echo "hotrod init"
+    exit 1
+}
+
+COMMAND=$1
+
+[ $# -gt 0 ] || usage
+
+shift 1
+
+CONFIGFILE=$DIR/default.yml
+CONFIGTEMPLATE=$DIR/docs/default.yml
+
+export USER=$(whoami)
+export HOTROD_HOSTNAME=$HOTROD_HOSTNAME
+export WEAVE_SECRET=$(openssl rand -hex 32)
+export HOTROD_AUTH_SECRET=$(openssl rand -hex 32)
+export HOTROD_ADMIN_AUTH_SECRET=$(openssl rand -hex 32)
+export LDAP_MANAGER_PASSWORD=$(openssl rand -hex 32)
+[ -n "$HOTROD_PROJECTFS" ]  || export HOTROD_PROJECTFS=https://github.com/panoptix-za/hotrod-projectfs.git
+[ -n "$HOTROD_ADMIN_SETTINGS" ]  || export HOTROD_ADMIN_SETTINGS=https://github.com/panoptix-za/hotrod-admin-settings.git
+
+# utility function to check whether a command can be executed by the shell
+# see http://stackoverflow.com/questions/592620/how-to-check-if-a-program-exists-from-a-bash-script
+command_exists () {
+    command -v $1 >/dev/null 2>&1
+}
+
+# Technique from https://github.com/rroemhild/docker-ejabberd/blob/master/run
+readonly PYTHON_JINJA2="import os;
+import sys;
+import jinja2;
+sys.stdout.write(
+    jinja2.Template
+        (sys.stdin.read()
+    ).render(env=os.environ))"
+
+make_config() {
+    echo "Generating config file..."
+    cat ${CONFIGTEMPLATE} \
+      | python -c "${PYTHON_JINJA2}" \
+      > ${CONFIGFILE}
+}
+
+pull_project() {
+    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    cd $DIR
+    chmod u+x ./init.sh
+    ./init.sh
+}
+
+bootstrap() {
+  read -p 'Proceed with bootstrap (will cause reboot)? YES/NO: ' answer
+  case "${answer}" in
+      [yY]|[yY][eE][sS])
+          $DIR/bin/bootstrap.sh
+          ;;
+  esac
+
+}
+
+init() {
+  echo "Checking for dependencies... (salt-ssh)"
+  command_exists salt-ssh
+  echo "salt-ssh (present)"  
+  echo ""
+  echo ""  
+  clear
+  echo "Welcome to the HotRod initialisation script"
+  echo ""
+  
+  while true; do
+    read -p "Please specify your HotRod server hostname [$HOTROD_HOSTNAME]:" hotrodurl
+    [ -z $hotrodurl ] || HOTROD_HOSTNAME=$hotrodurl
+    [  -n "$HOTROD_HOSTNAME" ] && break 
+  done
+  
+#   Salt should be able to run as the current user...  
+#   read -p "Please specify a user [$USER]:" username
+#   [ -z $username ] || USER=$username
+  
+  while true; do
+     [ -n "$WEAVE_SECRET" ] && break
+     read -p "Please specify a Weave Secret:" WEAVE_SECRET
+  done
+  while true; do
+     [ -n "$HOTROD_AUTH_SECRET" ] && break
+     read -p "Please specify a HotRod Auth Secret:" HOTROD_AUTH_SECRET
+  done
+  while true; do
+     [ -n "$HOTROD_ADMIN_AUTH_SECRET" ] && break
+     read -p "Please specify a HotRod-Admin Auth Secret:" HOTROD_ADMIN_AUTH_SECRET
+  done 
+  while true; do
+     [ -n "$LDAP_MANAGER_PASSWORD" ] && break
+     read -p "Please specify a LDAP Manager Password:" LDAP_MANAGER_PASSWORD
+  done 
+  while true; do
+    read -p "Please specify your HotRod projectfs URL [$HOTROD_PROJECTFS]:" hotrodpfsurl
+    [ -z $hotrodpfsurl ] || HOTROD_PROJECTFS=$hotrodpfsurl
+    [  -n "$HOTROD_PROJECTFS" ] && break 
+  done     
+  while true; do
+    read -p "Please specify your HotRod admin settings URL [$HOTROD_ADMIN_SETTINGS]:" hotrodasurl
+    [ -z $hotrodasurl ] || HOTROD_ADMIN_SETTINGS=$hotrodasurl
+    [  -n "$HOTROD_ADMIN_SETTINGS" ] && break 
+  done     
+  while true; do
+    echo "Please provide a password for the default admin account."
+    adminpasswd=$(slappasswd -h {SSHA} | base64)
+    [ -z $adminpasswd ] || ADMIN_PASSWD=$adminpasswd
+    [  -n "$ADMIN_PASSWD" ] && break 
+  done  
+  
+  DEFAULT_USER='default'
+  DEFAULT_USER_FIRSTNAME='Default'  
+  DEFAULT_USER_LASTNAME='User'    
+  
+  
+  while true; do
+    read -p "Please specify your HotRod default username [$DEFAULT_USER]:" defaultuser
+    [ -z $defaultuser ] || DEFAULT_USER=$defaultuser
+    [  -n "$DEFAULT_USER" ] && break 
+  done  
+  while true; do
+    read -p "Please specify your HotRod default user firstname [$DEFAULT_USER_FIRSTNAME]:" defaultuser
+    [ -z $defaultuser ] || DEFAULT_USER_FIRSTNAME=$defaultuser
+    [  -n "$DEFAULT_USER_FIRSTNAME" ] && break 
+  done  
+  while true; do
+    read -p "Please specify your HotRod default user lastname [$DEFAULT_USER_LASTNAME]:" defaultuser
+    [ -z $defaultuser ] || DEFAULT_USER_FIRSTNAME=$defaultuser
+    [  -n "$DEFAULT_USER_FIRSTNAME" ] && break 
+  done  
+  while true; do
+    echo "Please provide a password for the default user account."
+    password=$(slappasswd -h {SSHA} | base64)
+    [ -z $adminpasswd ] || DEFAULT_USER_PASSWD=$password
+    [  -n "$DEFAULT_USER_PASSWD" ] && break 
+  done  
+
+#   echo $HOTROD_HOSTNAME
+#   echo $USER
+#   echo $HOTROD_PROJECTFS
+#   echo $HOTROD_ADMIN_SETTINGS
+#   echo $LDAP_MANAGER_PASSWORD
+#   
+  export ADMIN_PASSWD
+  export DEFAULT_USER
+  export DEFAULT_USER_FIRSTNAME
+  export DEFAULT_USER_LASTNAME  
+  export DEFAULT_USER_PASSWD
+  
+  [ -f $DIR/default.yml ] && mv $DIR/default.yml $DIR/default.yml.prev
+  make_config
+ 
+  $DIR/mini.py
+  
+  echo "Bootstrapping project..." 
+  pull_project
+  
+#   echo "Checking for  $DIR/salt/roster"
+  
+  if [ ! -f $DIR/salt/roster ]; then
+    echo "" 
+    echo "Please note!" 
+    echo "You still need to create a 'salt/roster' file" 
+    echo "Bootstrap cannot proceed..." 
+    echo "See salt/roster.example" 
+    exit 1
+  fi
+  
+  bootstrap
+    
+}
+
+case "$COMMAND" in
+    pull)
+        pull_project
+        ;;
+    init)
+        init 
+        ;;
+    bootstrap)
+        bootstrap 
+        ;;
+        
+    *)
+        echo "Unknown weave command '$COMMAND'" >&2
+        usage
+        ;;
+esac        
+
