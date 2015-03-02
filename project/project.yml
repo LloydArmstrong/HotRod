@@ -1,0 +1,8 @@
+#Files are relative to project/ folder
+
+#variables:
+#  test: one
+#
+#templates:
+#  - src: file.txt.orig
+#    dst: file.txt

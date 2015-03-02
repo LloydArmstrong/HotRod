@@ -8,12 +8,12 @@ salt-install-sh:
 salt-install-sh-run:
   cmd.run:
     - name: |
-        sh /tmp/install_salt.sh git v{{ pillar['saltversion'] }}
+        curl -L https://bootstrap.saltstack.com -o install_salt.sh && sudo sh install_salt.sh
     - require_in:
       - file: saltmaster-config
       - file: grains-config
       - service: salt-minion-server
-    - unless: salt --version | grep {{ pillar['saltversion'] }}
+    - unless: test -e /usr/bin/salt-minion
       
 saltmaster-config:
   file.managed:

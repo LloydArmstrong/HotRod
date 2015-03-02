@@ -18,6 +18,4 @@ $SALT -r 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python-zmq'
 
 $SALT -r 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y upgrade'
 
-$SALT -r 'sudo DEBIAN_FRONTEND=noninteractive reboot'
-
-
+$SALT -r 'curl -L https://bootstrap.saltstack.com -o install_salt.sh && sudo sh install_salt.sh'

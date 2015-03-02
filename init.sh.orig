@@ -11,8 +11,8 @@ cd $DIR
 # Grab the latest hotrod-composition for our git server
 echo "HotRod Composition..."
 if [ -d $DIR/project/hotrod ]; then
-  cd $DIR/project
-  git pull
+  cd $DIR/project/hotrod
+  git pull origin master
 else
   cd $DIR/project
   git clone https://github.com/panoptix-za/hotrod-composition.git hotrod
@@ -21,7 +21,7 @@ fi
 echo "HotRod Admin..."
 if [ -d $DIR/project/admin ]; then
   cd $DIR/project/admin
-  git pull
+  git pull origin master
 else
   cd $DIR/project
   git clone {{ hotrod_admin }} admin
@@ -30,7 +30,7 @@ fi
 echo "HotRod ProjectFS..."
 if [ -d $DIR/project/projectfs ]; then
   cd $DIR/project/projectfs
-  git pull
+  git pull origin master
 else
   cd $DIR/project
   git clone {{ hotrod_projectfs }} projectfs

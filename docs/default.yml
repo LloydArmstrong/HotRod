@@ -1,102 +1,52 @@
-evariables:
-   - HOTROD_URL
-
 variables:
-  weave_shared_secret: {{ weave_shared_secret }}
-  weave_master_ip: {{ weave_master_ip }}
-  salt_user: {{ salt_user }}
+  weave_shared_secret: {{ env['WEAVE_SECRET'] }}
+  weave_master_ip: {{ env['HOTROD_HOSTNAME'] }}
+  salt_user: {{ env['USER'] }}
+  hotrod_admin: {{ env['HOTROD_ADMIN_SETTINGS'] }}
+  hotrod_projectfs: {{ env['HOTROD_PROJECTFS'] }}
   
-  hotrod_admin: {{ hotrod-admin }}
- 
-  hotrod_projectfs: {{ hotrod-projectfs }}
-  
-  gitblit_keys:
-    admin_ssh: |
-      {{ admin_public_ssh }}
-        
-    jenkins_ssh: |
-      {{ jenkins_public_ssh }}
-        
-    jenkins_private_key: |
-      {{ jenkins_private_ssh }}
-
   admin:
-    apiurl: http://{{ hotrod_server_ip }}:3000/api     
+    apiurl: http://{{ env['HOTROD_HOSTNAME'] }}:3000/api     
 
   userauth:
-    secret: {{ auth_shared_secret }}
-    url: http://{{ hotrod_server_ip }}:3001
+    secret: {{ env['HOTROD_AUTH_SECRET'] }}
+    url: http://{{ env['HOTROD_HOSTNAME'] }}:3001
     ldap_bind_user: cn=admin,dc=com
-    ldap_bind_pw: hello
+    ldap_bind_pw: {{ env['LDAP_MANAGER_PASSWORD'] }}
     
   adminauth:
-    secret: {{ auth_shared_secret }}
-    url: http://{{ hotrod_server_ip }}:3002  
+    secret: {{ env['HOTROD_ADMIN_AUTH_SECRET'] }}
+    url: http://{{ env['HOTROD_HOSTNAME'] }}:3002  
     ldap_bind_user: cn=admin,dc=com
     # HINT: Use the unencrypted version for now. FIXME
-    ldap_bind_pw: h{{ manager_password }}
+    ldap_bind_pw: {{ env['LDAP_MANAGER_PASSWORD'] }}
         
   addresses:
-    kibana: http://{{ hotrod_server_ip }}:4000
-    auth: http://{{ hotrod_server_ip }}:3001
+    kibana: http://{{ env['HOTROD_HOSTNAME'] }}:4000
+    auth: http://{{ env['HOTROD_HOSTNAME'] }}:3001
          
   # HINT:
   # Use slappasswd -h {SSHA} -s mypassword | base64
   # to generate the passwords for the users
   default_users:
-     ldap_manager_pw: {{ manager_password }}
+     ldap_manager_pw: {{ env['LDAP_MANAGER_PASSWORD'] }}
           
      administrators:
-       - cn: {{ admin_user_name }}
-         firstname: {{ admin_user_firstname }}
-         surname: {{ admin_user_lastname }}
-         password: {{ admin_user_password }}
+       - cn: admin
+         firstname: Default
+         surname: Admin
+         password: {{ env['ADMIN_PASSWD'] }}
               
      endusers:
-       - cn: {{ hotrod_user_name }}
-         firstname: {{ hotrod_user_firstname }}
-         surname: {{ hotrod_user_lastname }}
-         password: {{ hotrod_user_password }}
+       - cn: {{ env['DEFAULT_USER'] }}
+         firstname: {{ env['DEFAULT_USER_FIRSTNAME'] }}
+         surname: {{ env['DEFAULT_USER_LASTNAME'] }}
+         password: {{ env['DEFAULT_USER_PASSWD'] }}
          # HINT: Add additional users as a YAML array      
-
-  repos:   
-    'github.com/panoptix-za':
-      - docker-cas
-      - docker-coresaltmaster
-      - docker-elasticsearch
-      - docker-gitblit
-      - docker-gitolite
-      - docker-grand-ambassador
-      - docker-jdk
-      - docker-jenkins
-      - docker-kibana
-      - docker-ldap
-      - docker-logstash
-      - docker-modcasproxy
-      - docker-rsyslog
-      - docker-rundeck
-      - docker-saltmaster
-      - docker-sslrproxy
-
-  repos_no_dockerfile:   
-    'github.com/panoptix-za':
-      - cas-overlay
-      - mini-templates
-      - hotrod-admin
-      - hotrod-auth
-      - hotrod-components
-      - hotrod-jwt-proxy
-      - hotrod-renderer
-      - hotrod-reporting
-      - hotrod-template
 
 templates:
   - src: init.sh.orig
     dst: init.sh
-  - src: hacking/repos.orig
-    dst: hacking/repos
-  - src: hacking/fig.yml.orig
-    dst: hacking/fig.yml
   - src: local/ldap/db.ldif.orig
     dst: local/ldap/db.ldif
   - src: local/auth/local.yml.orig
