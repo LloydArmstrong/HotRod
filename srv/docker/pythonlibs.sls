@@ -1,5 +1,5 @@
 python-pip-pkg:
-  pkg.latest:
+  pkg.installed:
     - name: python-pip
     - refresh: True
 

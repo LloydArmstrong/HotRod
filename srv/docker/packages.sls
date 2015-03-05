@@ -9,7 +9,7 @@ docker:
       - pkg: lxc-docker
 
 docker-pkg:
-  pkg.latest:
+  pkg.installed:
     - name: lxc-docker
     - refresh: True
 

@@ -1,6 +1,6 @@
 
 weave-requirements:
-  pkg.latest:
+  pkg.installed:
     - names: 
       - conntrack
       - ethtool
