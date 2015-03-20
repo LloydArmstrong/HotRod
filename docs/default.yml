@@ -2,6 +2,9 @@ variables:
   weave_shared_secret: {{ env['WEAVE_SECRET'] }}
   weave_master_ip: {{ env['HOTROD_HOSTNAME'] }}
   salt_user: {{ env['USER'] }}
+  salt_ssh_host: {{ env['HOTROD_HOSTNAME'] }}
+  salt_ssh_user: {{ env['HOTROD_HOST_USER'] }}  
+  salt_ssh_sudo: {{ env['HOTROD_HOST_SUDO'] }}    
   hotrod_admin: {{ env['HOTROD_ADMIN_SETTINGS'] }}
   hotrod_projectfs: {{ env['HOTROD_PROJECTFS'] }}
   
@@ -63,3 +66,9 @@ templates:
     dst: salt/master
   - src: salt/master.d/weave.conf.orig
     dst: salt/master.d/weave.conf
+  - src: salt/roster.orig
+    dst: salt/roster
+  - src: ssh.sh.orig
+    dst: ssh.sh
+    
+    

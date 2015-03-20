@@ -8,7 +8,6 @@ cd $DIR
 
 usage() {
     echo "Usage:"
-    echo "hotrod setup"
     echo "hotrod init"
     exit 1
 }
@@ -22,12 +21,15 @@ shift 1
 CONFIGFILE=$DIR/default.yml
 CONFIGTEMPLATE=$DIR/docs/default.yml
 
+export FWDPORT=8999
 export USER=$(whoami)
+export HOTROD_HOST_USER=root
+export HOTROD_HOST_SUDO=yes
 export HOTROD_HOSTNAME=$HOTROD_HOSTNAME
 export WEAVE_SECRET=$(openssl rand -hex 32)
 export HOTROD_AUTH_SECRET=$(openssl rand -hex 32)
 export HOTROD_ADMIN_AUTH_SECRET=$(openssl rand -hex 32)
-export LDAP_MANAGER_PASSWORD=$(openssl rand -hex 32)
+export LDAP_MANAGER_PASSWORD=$(openssl rand -hex 12)
 [ -n "$HOTROD_PROJECTFS" ]  || export HOTROD_PROJECTFS=https://github.com/panoptix-za/hotrod-projectfs.git
 [ -n "$HOTROD_ADMIN_SETTINGS" ]  || export HOTROD_ADMIN_SETTINGS=https://github.com/panoptix-za/hotrod-admin-settings.git
 
@@ -61,13 +63,86 @@ pull_project() {
 }
 
 bootstrap() {
-  read -p 'Proceed with bootstrap (will cause reboot)? YES/NO: ' answer
+  read -p 'Proceed with bootstrap? YES/NO: ' answer
   case "${answer}" in
       [yY]|[yY][eE][sS])
           $DIR/bin/bootstrap.sh
           ;;
+      *)
+        echo "Skip Bootstrap"
+#         exit 0
+        ;;
   esac
+}
 
+highstate() {
+  read -p 'Proceed with setup? YES/NO: ' answer
+  case "${answer}" in
+      [yY]|[yY][eE][sS])
+          $DIR/bin/cloud_highstate.sh
+          $DIR/bin/cloud_cluster.sh
+          ;;
+      *)
+        echo "Skip Highstate"      
+#         exit 0
+        ;;
+  esac
+}
+
+sshtunnel() {
+  
+  chmod u+x $DIR/ssh.sh
+  $DIR/ssh.sh&
+  sleep 5
+  
+}
+
+stoptunnel() {
+  PID=$(ps | grep "\-L8443" | grep -v grep | awk '{ print $1; }')
+  kill $PID
+}
+
+
+updatehotrod() {
+  $DIR/bin/hotrodctl_update.sh
+}
+
+
+repos() {
+  read -p 'Initialise with default git repositories (recommended)? YES/NO: ' answer
+  case "${answer}" in
+      [yY]|[yY][eE][sS])
+      
+            set +e
+            RET=$(ps | grep -v grep | grep '\-L8443')
+            set -e
+                  
+            if [ "$RET" == "" ]; then
+              read -p 'Start ssh tunnel? YES/NO: ' answer
+              case "${answer}" in
+                  [yY]|[yY][eE][sS])          
+                      sshtunnel
+                      ;;
+                  *)
+                    echo "Skip stop/start ssh tunnel"      
+                    ;;
+              esac                        
+            fi
+      
+            cd $DIR/project/admin
+            git push hotrod master
+            cd $DIR/project/hotrod
+            git push hotrod master
+            cd $DIR/project/projectfs
+            git push hotrod master
+            $DIR/bin/core_stop.sh
+            $DIR/bin/core_start.sh 
+          ;;
+      *)
+        exit 0
+        ;;
+  esac
+ 
 }
 
 init() {
@@ -86,6 +161,21 @@ init() {
     [  -n "$HOTROD_HOSTNAME" ] && break 
   done
   
+  while true; do
+    read -p "Please specify a username for $HOTROD_HOSTNAME [$HOTROD_HOST_USER]:" hotroduser
+    [ -z $hotroduser ] || HOTROD_HOST_USER=$hotroduser
+    [  -n "$HOTROD_HOST_USER" ] && break 
+  done  
+  
+  read -p 'Use SUDO? YES/NO: ' answer
+  case "${answer}" in
+      [yY]|[yY][eE][sS])
+          HOTROD_HOST_SUDO=True
+          ;;
+      *)
+          HOTROD_HOST_SUDO=False
+          ;;
+  esac  
 #   Salt should be able to run as the current user...  
 #   read -p "Please specify a user [$USER]:" username
 #   [ -z $username ] || USER=$username
@@ -149,13 +239,7 @@ init() {
     [ -z $adminpasswd ] || DEFAULT_USER_PASSWD=$password
     [  -n "$DEFAULT_USER_PASSWD" ] && break 
   done  
-
-#   echo $HOTROD_HOSTNAME
-#   echo $USER
-#   echo $HOTROD_PROJECTFS
-#   echo $HOTROD_ADMIN_SETTINGS
-#   echo $LDAP_MANAGER_PASSWORD
-#   
+ 
   export ADMIN_PASSWD
   export DEFAULT_USER
   export DEFAULT_USER_FIRSTNAME
@@ -164,7 +248,22 @@ init() {
   
   [ -f $DIR/default.yml ] && mv $DIR/default.yml $DIR/default.yml.prev
   make_config
- 
+    
+}
+
+doinit() {
+    if [ -f $DIR/default.yml ]; then
+    read -p 'Prompt for new settings (will overwrite previous choices)? YES/NO: ' answer
+    case "${answer}" in
+        [yY]|[yY][eE][sS])
+            init            
+            ;;
+        *)
+          echo "Continue..."      
+          ;;
+    esac                        
+  fi
+
   $DIR/mini.py
   
   echo "Bootstrapping project..." 
@@ -182,22 +281,42 @@ init() {
   fi
   
   bootstrap
-    
+  
+  highstate
+  
+  repos
+  
+  updatehotrod
 }
+
 
 case "$COMMAND" in
     pull)
         pull_project
         ;;
     init)
-        init 
+        doinit 
         ;;
     bootstrap)
         bootstrap 
         ;;
-        
+    highstate)
+        highstate
+        ;;
+    repos)
+        repos
+        ;;    
+    sshtunnel)
+        sshtunnel
+        ;;
+    stoptunnel)
+        stoptunnel
+        ;;        
+    updatehotrod)
+        updatehotrod
+        ;;        
     *)
-        echo "Unknown weave command '$COMMAND'" >&2
+        echo "Unknown hotrod command '$COMMAND'" >&2
         usage
         ;;
 esac        

@@ -17,6 +17,8 @@ else
   cd $DIR/project
   git clone https://github.com/panoptix-za/hotrod-composition.git hotrod
 fi
+git remote | grep hotrod || git remote add hotrod https://admin@127.0.0.1:8443/r/hotrod-composition.git
+git config http.sslVerify false
 
 echo "HotRod Admin..."
 if [ -d $DIR/project/admin ]; then
@@ -26,6 +28,8 @@ else
   cd $DIR/project
   git clone {{ hotrod_admin }} admin
 fi
+git remote | grep hotrod || git remote add hotrod https://admin@127.0.0.1:8443/r/hotrod-admin.git
+git config http.sslVerify false
 
 echo "HotRod ProjectFS..."
 if [ -d $DIR/project/projectfs ]; then
@@ -35,7 +39,8 @@ else
   cd $DIR/project
   git clone {{ hotrod_projectfs }} projectfs
 fi
-
+git remote | grep hotrod || git remote add hotrod https://admin@127.0.0.1:8443/r/hotrod-projectfs.git
+git config http.sslVerify false
 
 cd $DIR
 echo "Done..."

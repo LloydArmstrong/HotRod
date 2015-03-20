@@ -1,0 +1,13 @@
+# Roster File for salt
+# can use bin/cloud_updateroster.sh to update, you will need to set up the 
+# rest of salt cloud
+
+hotrodmaster-0-1:
+   host: {{ salt_ssh_host }}
+   user: {{ salt_ssh_user }}
+   sudo: {{ salt_ssh_sudo }}
+   grains:
+     weave_num: 1
+     weave_sub: 254
+     weave_ip: 10.0.0.1
+

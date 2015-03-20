@@ -12,8 +12,5 @@ cd $DIR
 set -o noglob
 SALT='time salt-ssh * --max-procs=20 -i -l info --hard-crash '
 
-$SALT --refresh -r 'sudo DEBIAN_FRONTEND=noninteractive apt-get update'
+$SALT -r 'sudo /usr/local/bin/hotrodctl stop'
 
-$SALT -r 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python-zmq'
-
-$SALT -r 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y upgrade'

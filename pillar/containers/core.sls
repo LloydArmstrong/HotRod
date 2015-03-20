@@ -6,7 +6,7 @@ ldapauth:
   ip:
    - 10.1.1.1
   ports:
-    - 127.0.0.1:1389:389
+    - 389:389
        
 gitblit:
   build:
