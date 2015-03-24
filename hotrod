@@ -9,6 +9,7 @@ cd $DIR
 usage() {
     echo "Usage:"
     echo "hotrod init"
+    echo "hotrod update"
     exit 1
 }
 
@@ -108,41 +109,37 @@ updatehotrod() {
 }
 
 
-# repos() {
-#   read -p 'Initialise with default git repositories (recommended)? YES/NO: ' answer
-#   case "${answer}" in
-#       [yY]|[yY][eE][sS])
-#       
-#             set +e
-#             RET=$(ps | grep -v grep | grep '\-L8443')
-#             set -e
-#                   
-#             if [ "$RET" == "" ]; then
-#               read -p 'Start ssh tunnel? YES/NO: ' answer
-#               case "${answer}" in
-#                   [yY]|[yY][eE][sS])          
-#                       sshtunnel
-#                       ;;
-#                   *)
-#                     echo "Skip stop/start ssh tunnel"      
-#                     ;;
-#               esac                        
-#             fi
-#       
-# #             cd $DIR/project/admin
-# #             git push hotrod master
-# #             cd $DIR/project/hotrod
-# #             git push hotrod master
-# #             cd $DIR/project/projectfs
-# #             git push hotrod master
-# #             $DIR/bin/core_stop.sh
-# #             $DIR/bin/core_start.sh 
-#           ;;
-#       *)
-#         exit 0
-#         ;;
-#   esac
-#    }
+repos() {
+      
+  set +e
+  RET=$(ps | grep -v grep | grep '\-L8080')
+  set -e
+      
+  if [ "$RET" == "" ]; then
+    read -p 'Start ssh tunnel? YES/NO: ' answer
+    case "${answer}" in
+        [yY]|[yY][eE][sS])          
+            sshtunnel
+            
+            ;;
+        *)
+          echo "Skip stop/start ssh tunnel, please start it manually"
+          exit 0
+          ;;
+    esac                        
+  else
+    echo "Found $RET"
+  fi
+  
+  cd $DIR/project
+  for i in $(find . -type d | grep -e '\.git$' | cut -f2 -d'/'); do
+    cd $DIR/project/${i}
+    pwd
+    git push hotrod master
+  done                  
+
+
+}
 
 init() {
   echo "Checking for dependencies... (salt-ssh)"
@@ -251,7 +248,7 @@ init() {
 }
 
 doinit() {
-    if [ -f $DIR/default.yml ]; then
+  if [ -f $DIR/default.yml ]; then
     read -p 'Prompt for new settings (will overwrite previous choices)? YES/NO: ' answer
     case "${answer}" in
         [yY]|[yY][eE][sS])
@@ -261,7 +258,9 @@ doinit() {
           echo "Continue..."      
           ;;
     esac                        
-  fi
+  else
+    init
+  fi 
 
   $DIR/mini.py
   
@@ -285,6 +284,11 @@ doinit() {
   
 #   repos
   
+  updatehotrod
+}
+
+projectupdate(){
+  repos
   updatehotrod
 }
 
@@ -313,7 +317,10 @@ case "$COMMAND" in
         ;;        
     updatehotrod)
         updatehotrod
-        ;;        
+        ;;      
+    update)
+        projectupdate
+        ;;
     *)
         echo "Unknown hotrod command '$COMMAND'" >&2
         usage

@@ -11,3 +11,5 @@ cd $DIR
 time salt-ssh \* -l info state.sls cluster.build 
 time salt-ssh \* -l info state.sls cluster.run 
 time salt-ssh \* -l info state.sls cluster.network
+time salt-ssh \* -l info service.restart salt-minion
+
