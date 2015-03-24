@@ -1,8 +1,9 @@
-FROM panoptix/gitblit
-
+FROM panoptix/gitolite-http
 MAINTAINER Stephan Buys <stephan.buys@panoptix.co.za>
 
-ADD gitblit.properties /opt/gitblit-data/gitblit.properties
-ADD jenkins.groovy /opt/gitblit-data/groovy/jenkins.groovy
-# ADD hotrod-composition.git /opt/gitblit-data/git/hotrod-composition.git
-# ADD site /opt/gitblit-data/git/site
+COPY hotrod-composition.git /repositories/hotrod-composition.git
+COPY hotrod-admin.git /repositories/hotrod-admin.git
+COPY hotrod-projectfs.git /repositories/hotrod-projectfs.git
+
+RUN htpasswd -cb /.htpasswd admin hotrod
+

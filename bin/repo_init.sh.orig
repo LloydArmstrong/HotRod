@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Run this script to get the initial repos prepped, as well as generate the custom config 
+# files
+
+set -e 
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
+cd $DIR
+
+# Grab the latest hotrod-composition for our git server
+echo "HotRod Composition..."
+if [ -d $DIR/local/git/hotrod-composition.git ]; then
+  echo "Already downloaded..."
+#   cd $DIR/local/git/hotrod-composition.git
+#   git pull origin master
+else
+  cd $DIR/local/git
+  git clone --bare https://github.com/panoptix-za/hotrod-composition.git 
+  cd $DIR/project
+  git clone $DIR/local/git/hotrod-composition.git hotrod
+  cd hotrod
+  git remote | grep hotrod || git remote add hotrod http://admin:hotrod@127.0.0.1:8080/git/hotrod-composition.git
+fi
+
+echo "HotRod Admin..."
+if [ -d $DIR/local/git/hotrod-admin.git ]; then
+  echo "Already downloaded..."
+#   cd $DIR/local/git/hotrod-admin.git
+#   git pull origin master
+else
+  cd $DIR/local/git
+  git clone --bare {{ hotrod_admin }} hotrod-admin.git
+  cd $DIR/project
+  git clone $DIR/local/git/hotrod-admin.git admin
+  cd admin  
+  git remote | grep hotrod || git remote add hotrod http://admin:hotrod@127.0.0.1:8080/git/hotrod-admin.git  
+fi
+
+
+echo "HotRod ProjectFS..."
+if [ -d $DIR/local/git/hotrod-projectfs.git ]; then
+  echo "Already downloaded..."
+#   cd $DIR/local/git/hotrod-projectfs.git
+#   git pull origin master
+else
+  cd $DIR/local/git
+  git clone --bare {{ hotrod_projectfs }} hotrod-projectfs.git
+  cd $DIR/project
+  git clone $DIR/local/git/hotrod-projectfs.git projectfs
+  cd projectfs    
+  git remote | grep hotrod || git remote add hotrod http://admin:hotrod@127.0.0.1:8080/git/hotrod-projectfs.git
+fi
+
+
+cd $DIR/local/git
+#Entice Saltstack to copy empty directories to keep the repos intact
+find *.git/ -type d -exec touch {}/.keep \;
+cd $DIR
+
+echo "Done..."
+
+
+

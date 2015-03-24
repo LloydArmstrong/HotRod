@@ -58,8 +58,8 @@ make_config() {
 pull_project() {
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     cd $DIR
-    chmod u+x ./init.sh
-    ./init.sh
+    chmod u+x ./bin/repo_init.sh
+    ./bin/repo_init.sh
 }
 
 bootstrap() {
@@ -91,8 +91,8 @@ highstate() {
 
 sshtunnel() {
   
-  chmod u+x $DIR/ssh.sh
-  $DIR/ssh.sh&
+  chmod u+x $DIR/bin/ssh.sh
+  $DIR/bin/ssh.sh&
   sleep 5
   
 }
@@ -108,42 +108,41 @@ updatehotrod() {
 }
 
 
-repos() {
-  read -p 'Initialise with default git repositories (recommended)? YES/NO: ' answer
-  case "${answer}" in
-      [yY]|[yY][eE][sS])
-      
-            set +e
-            RET=$(ps | grep -v grep | grep '\-L8443')
-            set -e
-                  
-            if [ "$RET" == "" ]; then
-              read -p 'Start ssh tunnel? YES/NO: ' answer
-              case "${answer}" in
-                  [yY]|[yY][eE][sS])          
-                      sshtunnel
-                      ;;
-                  *)
-                    echo "Skip stop/start ssh tunnel"      
-                    ;;
-              esac                        
-            fi
-      
-            cd $DIR/project/admin
-            git push hotrod master
-            cd $DIR/project/hotrod
-            git push hotrod master
-            cd $DIR/project/projectfs
-            git push hotrod master
-            $DIR/bin/core_stop.sh
-            $DIR/bin/core_start.sh 
-          ;;
-      *)
-        exit 0
-        ;;
-  esac
- 
-}
+# repos() {
+#   read -p 'Initialise with default git repositories (recommended)? YES/NO: ' answer
+#   case "${answer}" in
+#       [yY]|[yY][eE][sS])
+#       
+#             set +e
+#             RET=$(ps | grep -v grep | grep '\-L8443')
+#             set -e
+#                   
+#             if [ "$RET" == "" ]; then
+#               read -p 'Start ssh tunnel? YES/NO: ' answer
+#               case "${answer}" in
+#                   [yY]|[yY][eE][sS])          
+#                       sshtunnel
+#                       ;;
+#                   *)
+#                     echo "Skip stop/start ssh tunnel"      
+#                     ;;
+#               esac                        
+#             fi
+#       
+# #             cd $DIR/project/admin
+# #             git push hotrod master
+# #             cd $DIR/project/hotrod
+# #             git push hotrod master
+# #             cd $DIR/project/projectfs
+# #             git push hotrod master
+# #             $DIR/bin/core_stop.sh
+# #             $DIR/bin/core_start.sh 
+#           ;;
+#       *)
+#         exit 0
+#         ;;
+#   esac
+#    }
 
 init() {
   echo "Checking for dependencies... (salt-ssh)"
@@ -284,7 +283,7 @@ doinit() {
   
   highstate
   
-  repos
+#   repos
   
   updatehotrod
 }
@@ -303,9 +302,9 @@ case "$COMMAND" in
     highstate)
         highstate
         ;;
-    repos)
-        repos
-        ;;    
+#     repos)
+#         repos
+#         ;;    
     sshtunnel)
         sshtunnel
         ;;

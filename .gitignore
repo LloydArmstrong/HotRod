@@ -1,3 +1,4 @@
+bin/repo_init.sh
 ssh.sh
 default.yml.prev
 BBox.bbprojectd/

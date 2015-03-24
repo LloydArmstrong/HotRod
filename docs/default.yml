@@ -48,8 +48,10 @@ variables:
          # HINT: Add additional users as a YAML array      
 
 templates:
-  - src: init.sh.orig
-    dst: init.sh
+  - src: bin/ssh.sh.orig
+    dst: bin/ssh.sh
+  - src: bin/repo_init.sh.orig
+    dst: bin/repo_init.sh
   - src: local/ldap/db.ldif.orig
     dst: local/ldap/db.ldif
   - src: local/auth/local.yml.orig
@@ -58,8 +60,6 @@ templates:
     dst: local/adminauth/local.yml    
   - src: local/kibanaproxy/local.yml.orig
     dst: local/kibanaproxy/local.yml
-  - src: local/git/gitblit.properties.orig
-    dst: local/git/gitblit.properties
   - src: pillar/weave.sls.orig
     dst: pillar/weave.sls
   - src: salt/master.orig
@@ -68,7 +68,5 @@ templates:
     dst: salt/master.d/weave.conf
   - src: salt/roster.orig
     dst: salt/roster
-  - src: ssh.sh.orig
-    dst: ssh.sh
     
     
