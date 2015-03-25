@@ -10,6 +10,7 @@ usage() {
     echo "hotrodctl stop"    
     echo "hotrodctl status"        
     echo "hotrodctl update"
+    echo "hotrodctl restart [container]"
     echo "hotrodctl project-setup"
     echo ""
     exit 1
@@ -33,6 +34,17 @@ startother() {
   else
     echo "Starting hotrod containers using 'update'"
     update
+  fi
+}
+
+restart() {
+  CID=$(docker ps | grep hotrod | grep $1 | cut -f1 -d" ")
+  echo "$CID"
+  if [ -f /usr/local/bin/network_hotrod.sh ]; then 
+    docker restart $CID
+    /usr/local/bin/network_hotrod.sh  
+  else
+    echo "run update first"
   fi
 }
 
@@ -79,6 +91,9 @@ case "$COMMAND" in
     status)
         status
         ;;
+    restart)
+        restart $1
+        ;;        
     start-core)
         startcore
         ;;
