@@ -8,22 +8,12 @@ It is under heavy development and should be handled with care.
 
 HERE BE DRAGONS, HotRod is not ready for production use unless you know what you're doing, considered pre-Alpha. There are known security issues (static passwords, static SSL keys, badness), which can, will and should be fixed.
 
-
 ### Getting Started
 
 - Install saltstack (version 2014.7.x, you need salt-ssh)
-- Customise the docs/default.yml file and place it in the project root folder.
-- run ./mini.py
-- Ensure salt has ssh access set up (involves setting up salt/roster file)
-- run ./init.sh
-- run ./bin/bootstrap.sh
-- run ./bin/cloud_highstate.sh
+- run ./hotrod init
  
-### What is HotRod?
-
-HotRod is an easy way to get an analytics platform (Elasticsearch, Kibana, Logstash) running in a modern fashion. It works with Docker and Weave.
-
-### Architecture Components
+### Components
 
 - Saltstack
 - Docker
@@ -31,6 +21,7 @@ HotRod is an easy way to get an analytics platform (Elasticsearch, Kibana, Logst
 - Elasticsearch
 - Rsyslog
 - Kibana
+- Nginx
 
 ### License
 
