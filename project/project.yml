@@ -3,6 +3,6 @@
 #variables:
 #  test: one
 #
-#templates:
-#  - src: file.txt.orig
-#    dst: file.txt
+templates:
+  - src: project/projectfs/admin/local.yml.orig
+    dst: project/projectfs/admin/local.yml
