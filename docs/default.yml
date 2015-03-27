@@ -7,6 +7,7 @@ variables:
   salt_ssh_sudo: {{ env['HOTROD_HOST_SUDO'] }}    
   hotrod_admin: {{ env['HOTROD_ADMIN_SETTINGS'] }}
   hotrod_projectfs: {{ env['HOTROD_PROJECTFS'] }}
+  hotrod_root_host: {{ env['HOTROD_HOSTNAME'] }}
   
   admin:
     apiurl: http://{{ env['HOTROD_HOSTNAME'] }}:3000/api     
@@ -54,8 +55,6 @@ templates:
     dst: bin/repo_init.sh
   - src: local/ldap/db.ldif.orig
     dst: local/ldap/db.ldif
-  - src: local/auth/local.yml.orig
-    dst: local/auth/local.yml
   - src: local/adminauth/local.yml.orig
     dst: local/adminauth/local.yml    
   - src: local/kibanaproxy/local.yml.orig
