@@ -11,6 +11,6 @@ RUN touch /tmp/hotrod
 ADD remote_pillar.conf /etc/salt/master.d/
 ADD remote_states.conf /etc/salt/master.d/
 ADD hotrod-master.conf /etc/salt/master.d/
-ADD kibanaproxy /master/local/kibanaproxy
-ADD auth /master/local/auth
-ADD adminauth /master/local/adminauth
+# ADD kibanaproxy /master/local/kibanaproxy
+# ADD auth /master/local/auth
+# ADD adminauth /master/local/adminauth
