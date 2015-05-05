@@ -1,4 +1,5 @@
 bin/repo_init.sh
+mini.py
 ssh.sh
 default.yml.prev
 BBox.bbprojectd/

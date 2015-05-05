@@ -262,6 +262,14 @@ doinit() {
     init
   fi 
 
+  if [ ! -f $DIR/mini.py ]; then
+    mkdir -p $DIR/hacking/masters
+    cd $DIR/hacking/masters
+    git clone https://github.com/panoptix-za/mini-templates
+    cd $DIR
+    ln -sf $DIR/hacking/masters/mini-templates/mini.py
+  fi
+
   $DIR/mini.py
   
   echo "Bootstrapping project..." 
