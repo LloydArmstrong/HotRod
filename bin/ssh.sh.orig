@@ -1,1 +1,7 @@
+ssh_pid=$(ps a | grep ssh | grep 8080 | cut -f1 -d" ")
+if [ -n "$ssh_pid" ]; then
+   echo "Killing... $ssh_pid"
+   kill $ssh_pid
+fi
+
 ssh -L8080:127.0.0.1:8080 -N {{ salt_ssh_user }}@{{ salt_ssh_host }}
