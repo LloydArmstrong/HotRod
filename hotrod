@@ -112,24 +112,25 @@ updatehotrod() {
 repos() {
       
   set +e
-  RET=$(ps | grep -v grep | grep '\-L8080')
+  #RET=$(ps | grep -v grep | grep '\-L8080')
+  sshtunnel
   set -e
       
-  if [ "$RET" == "" ]; then
-    read -p 'Start ssh tunnel? YES/NO: ' answer
-    case "${answer}" in
-        [yY]|[yY][eE][sS])          
-            sshtunnel
-            
-            ;;
-        *)
-          echo "Skip stop/start ssh tunnel, please start it manually"
-          exit 0
-          ;;
-    esac                        
-  else
-    echo "Found $RET"
-  fi
+  #if [ "$RET" == "" ]; then
+  #  read -p 'Start ssh tunnel? YES/NO: ' answer
+  #  case "${answer}" in
+  #      [yY]|[yY][eE][sS])          
+  #          sshtunnel
+  #          
+  #          ;;
+  #      *)
+  #        echo "Skip stop/start ssh tunnel, please start it manually"
+  #        exit 0
+  #        ;;
+  #  esac                        
+  #else
+  #  echo "Found $RET"
+  #fi
   
   cd $DIR/project
   for i in $(find . -type d | grep -e '\.git$' | cut -f2 -d'/'); do
