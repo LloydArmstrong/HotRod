@@ -2,11 +2,7 @@
 
 HotRod is an opinionated 'Platform' for analytics. It contains the building blocks and automation to enable running logging as a PaaS. 
 
-It is under heavy development and should be handled with care.
-
-### Bugs/Roadmap
-
-HERE BE DRAGONS, HotRod is not ready for production use unless you know what you're doing, considered pre-Alpha. There are known security issues (static passwords, static SSL keys, badness), which can, will and should be fixed.
+It is under heavy development, please contact support@panoptix.co.za for assistance.
 
 ### Getting Started
 
