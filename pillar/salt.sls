@@ -1,1 +1,0 @@
-saltversion: 2014.7.0

@@ -1,8 +1,0 @@
-
-{% for prefix in repos -%}
-{% for repo in repos[prefix] -%}
-panoptix/{{ repo|replace("docker-", "") }}:
-   build: masters/{{ repo }}
-   
-{% endfor %}
-{%- endfor %}

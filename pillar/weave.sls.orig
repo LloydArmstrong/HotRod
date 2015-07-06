@@ -1,3 +1,0 @@
-weave:
-#   master: hotrodmaster-0-1
-  shared_secret: {{ weave_shared_secret }}

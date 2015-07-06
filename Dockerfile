@@ -1,7 +1,7 @@
 FROM ubuntu:14.04.2
 MAINTAINER Stephan Buys <stephan.buys@panoptix.co.za>
 
-ENV REFRESHED_ON "25 Mar 2015"
+ENV REFRESHED_ON "29 Jun 2015"
 
 RUN apt-get update && \
     apt-get -y install \
@@ -10,15 +10,37 @@ RUN apt-get update && \
       ldap-utils \
       python-jinja2 \
       python-pip \
-      python-yaml 
+      python-yaml \
+      python-software-properties \
+      software-properties-common
+      
+#install saltstack
+RUN add-apt-repository ppa:saltstack/salt && \
+    apt-get update && \
+    apt-get -y install salt-master salt-ssh
+
+#install ldap (for the slapdpasswd util)
+RUN apt-get -y install slapd
 
 #install Docker
 RUN curl -sSL https://get.docker.com/ubuntu/ | sudo sh
 
-RUN pip install --upgrade \
-      fig \
-      shyaml
+#install Docker Compose
+RUN curl -L https://github.com/docker/compose/releases/download/1.3.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
 
-RUN git clone https://github.com/panoptix-za/mini-templates.git
+#install Docker Machine
+RUN curl -L https://github.com/docker/machine/releases/download/v0.3.0/docker-machine_linux-amd64 > /usr/local/bin/docker-machine && \
+    chmod +x /usr/local/bin/docker-machine
+    
+#install Docker Swarm
+    
+ADD . /hotrod
+WORKDIR /hotrod
+
+#install the mini template script
+RUN cd /tmp && git clone https://github.com/panoptix-za/mini-templates.git && \
+    ln -sf /tmp/mini-templates/mini.py /usr/local/bin/mini.py
 
 CMD /bin/bash
+

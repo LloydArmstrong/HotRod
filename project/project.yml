@@ -1,8 +1,0 @@
-#Files are relative to project/ folder
-
-#variables:
-#  test: one
-#
-#templates:
-#  - src: project/projectfs/admin/local.yml.orig
-#    dst: project/projectfs/admin/local.yml

@@ -1,7 +1,0 @@
-SIGNING_SECRET: {{ adminauth.secret }}
-
-LDAP_URI: ldap://10.1.1.1:389
-LDAP_USERS_DN: ou=Admins,dc=com
-LDAP_BIND_USER: {{ adminauth.ldap_bind_user }}
-LDAP_BIND_PASSWORD: {{ adminauth.ldap_bind_pw }}
-

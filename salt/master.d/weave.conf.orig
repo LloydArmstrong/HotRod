@@ -1,3 +1,0 @@
-
-ssh_grains:
-   weave_master_ip: {{ weave_master_ip }}
