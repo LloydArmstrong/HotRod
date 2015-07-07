@@ -2,14 +2,18 @@
 set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+STARTTIME=$(date +%s)
 cd $DIR
 
-#Inspired by, bit copied from https://github.com/zettio/weave
+declare -a TOOLS=("docker" "docker-machine" "docker-compose" "mini.py")
+
+#Inspired by and bits copied from https://github.com/zettio/weave
 
 usage() {
     echo "Usage:"
     echo "hotrod init"
-    echo "hotrod update"
+    echo "hotrod up"
+#     echo "hotrod update"
     exit 1
 }
 
@@ -56,127 +60,56 @@ make_config() {
       > ${CONFIGFILE}
 }
 
-pull_project() {
-    DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    cd $DIR
-    chmod u+x ./bin/repo_init.sh
-    ./bin/repo_init.sh
+end_time() {
+  ENDTIME=$(date +%s)
+  echo "$(($ENDTIME - $STARTTIME)) seconds elapsed..."
+  cd $DIR
 }
 
-bootstrap() {
-  read -p 'Proceed with bootstrap? YES/NO: ' answer
-  case "${answer}" in
-      [yY]|[yY][eE][sS])
-          $DIR/bin/bootstrap.sh
-          ;;
-      *)
-        echo "Skip Bootstrap"
-#         exit 0
-        ;;
-  esac
+trim() {
+    echo $*
 }
 
-highstate() {
-  read -p 'Proceed with setup? YES/NO: ' answer
-  case "${answer}" in
-      [yY]|[yY][eE][sS])
-          $DIR/bin/cloud_highstate.sh
-          $DIR/bin/cloud_cluster.sh
-          ;;
-      *)
-        echo "Skip Highstate"      
-#         exit 0
-        ;;
-  esac
-}
-
-sshtunnel() {
-  
-  chmod u+x $DIR/bin/ssh.sh
-  $DIR/bin/ssh.sh&
-  sleep 5
-  
-}
-
-stoptunnel() {
-  PID=$(ps | grep "\-L8443" | grep -v grep | awk '{ print $1; }')
-  kill $PID
-}
-
-
-updatehotrod() {
-  $DIR/bin/hotrodctl_update.sh
-}
-
-
-repos() {
-      
-  set +e
-  #RET=$(ps | grep -v grep | grep '\-L8080')
-  sshtunnel
-  set -e
-      
-  #if [ "$RET" == "" ]; then
-  #  read -p 'Start ssh tunnel? YES/NO: ' answer
-  #  case "${answer}" in
-  #      [yY]|[yY][eE][sS])          
-  #          sshtunnel
-  #          
-  #          ;;
-  #      *)
-  #        echo "Skip stop/start ssh tunnel, please start it manually"
-  #        exit 0
-  #        ;;
-  #  esac                        
-  #else
-  #  echo "Found $RET"
-  #fi
-  
-  cd $DIR/project
-  for i in $(find . -type d | grep -e '\.git$' | cut -f2 -d'/'); do
-    cd $DIR/project/${i}
-    pwd
-    git push hotrod master
-  done                  
-
-
-}
-
-init() {
-  echo "Checking for dependencies... (salt-ssh)"
-  command_exists salt-ssh
-  echo "salt-ssh (present)"  
-  echo ""
-  echo ""  
+create_default_yml() {
   clear
   echo "Welcome to the HotRod initialisation script"
   echo ""
   
+  export HOTROD_PROJNAME=Hotrod
+  
+  while true; do
+    read -p "Please specify your HotRod project name [$HOTROD_PROJNAME]:" hotrodproj
+    [ -z $hotrodproj ] || HOTROD_PROJNAME=$hotrodproj
+    [  -n "$HOTROD_PROJNAME" ] && break 
+  done
+  
+  find_machine
+  if [[ "$THIS_MACHINE" != "" ]]; then
+    export HOTROD_HOSTNAME=$(docker-machine ip $THIS_MACHINE)
+  fi
+    
   while true; do
     read -p "Please specify your HotRod server hostname [$HOTROD_HOSTNAME]:" hotrodurl
     [ -z $hotrodurl ] || HOTROD_HOSTNAME=$hotrodurl
     [  -n "$HOTROD_HOSTNAME" ] && break 
   done
   
-  while true; do
-    read -p "Please specify a username for $HOTROD_HOSTNAME [$HOTROD_HOST_USER]:" hotroduser
-    [ -z $hotroduser ] || HOTROD_HOST_USER=$hotroduser
-    [  -n "$HOTROD_HOST_USER" ] && break 
-  done  
-  
-  read -p 'Use SUDO? YES/NO: ' answer
-  case "${answer}" in
-      [yY]|[yY][eE][sS])
-          HOTROD_HOST_SUDO=True
-          ;;
-      *)
-          HOTROD_HOST_SUDO=False
-          ;;
-  esac  
-#   Salt should be able to run as the current user...  
-#   read -p "Please specify a user [$USER]:" username
-#   [ -z $username ] || USER=$username
-  
+#   while true; do
+#     read -p "Please specify a username for $HOTROD_HOSTNAME [$HOTROD_HOST_USER]:" hotroduser
+#     [ -z $hotroduser ] || HOTROD_HOST_USER=$hotroduser
+#     [  -n "$HOTROD_HOST_USER" ] && break 
+#   done  
+#   
+#   read -p 'Use SUDO? YES/NO: ' answer
+#   case "${answer}" in
+#       [yY]|[yY][eE][sS])
+#           HOTROD_HOST_SUDO=True
+#           ;;
+#       *)
+#           HOTROD_HOST_SUDO=False
+#           ;;
+#   esac  
+
   while true; do
      [ -n "$WEAVE_SECRET" ] && break
      read -p "Please specify a Weave Secret:" WEAVE_SECRET
@@ -193,16 +126,16 @@ init() {
      [ -n "$LDAP_MANAGER_PASSWORD" ] && break
      read -p "Please specify a LDAP Manager Password:" LDAP_MANAGER_PASSWORD
   done 
-  while true; do
-    read -p "Please specify your HotRod projectfs URL [$HOTROD_PROJECTFS]:" hotrodpfsurl
-    [ -z $hotrodpfsurl ] || HOTROD_PROJECTFS=$hotrodpfsurl
-    [  -n "$HOTROD_PROJECTFS" ] && break 
-  done     
-  while true; do
-    read -p "Please specify your HotRod admin settings URL [$HOTROD_ADMIN_SETTINGS]:" hotrodasurl
-    [ -z $hotrodasurl ] || HOTROD_ADMIN_SETTINGS=$hotrodasurl
-    [  -n "$HOTROD_ADMIN_SETTINGS" ] && break 
-  done     
+#   while true; do
+#     read -p "Please specify your HotRod projectfs URL [$HOTROD_PROJECTFS]:" hotrodpfsurl
+#     [ -z $hotrodpfsurl ] || HOTROD_PROJECTFS=$hotrodpfsurl
+#     [  -n "$HOTROD_PROJECTFS" ] && break 
+#   done     
+#   while true; do
+#     read -p "Please specify your HotRod admin settings URL [$HOTROD_ADMIN_SETTINGS]:" hotrodasurl
+#     [ -z $hotrodasurl ] || HOTROD_ADMIN_SETTINGS=$hotrodasurl
+#     [  -n "$HOTROD_ADMIN_SETTINGS" ] && break 
+#   done     
   while true; do
     echo "Please provide a password for the default admin account."
     adminpasswd=$(slappasswd -h {SSHA} | base64)
@@ -248,87 +181,154 @@ init() {
     
 }
 
+TEMPLATES=""
+RUNFILES=""
+
+recurse() {
+ for i in "$1"/*;do
+    if [ -f "$i" ]; then
+        if [[ "$i" == *dc-* && "$i" == *.yml.run ]]; then
+           RUNFILES="$RUNFILES $i"
+        fi 
+        if [[ "$i" == *dc-* && "$i" == *.yml ]]; then           
+           TEMPLATES="$TEMPLATES $i"
+        fi
+    elif [ -d "$i" ];then
+        recurse "$i"
+    fi
+ done
+}
+
+compose_up() {
+  cd $DIR
+  
+  mini.py
+  
+  recurse .
+  
+  if [[ ! "$RUNFILES" == "" ]]; then
+    read -p 'Old .run files detected, do you wish do clear and recreate ALL containers? YES/NO: ' answer
+    case "${answer}" in
+        [yY]|[yY][eE][sS])
+            for i in $RUNFILES; do
+              rm $i
+            done            
+            ;;
+        *)
+          echo "Skipping 'run once' compose files..."      
+          ;;
+    esac                        
+  fi
+  
+  for i in $TEMPLATES; do
+    # Add 'once' to the docker-compose (dc-*.yml) file to only run once
+    if [[ "$i" != *-once* || ! -f ${i}.run ]]; then
+      echo ">> docker-compose -f $i build"
+      docker-compose -f $i build
+      echo ">> docker-compose -f $i up -d"      
+      docker-compose -f $i up -d
+      touch ${i}.run
+    fi
+  done
+  
+  end_time
+}
+
 doinit() {
+
+  for cmd in "${TOOLS[@]}"
+  do 
+    echo "Checking for dependencies... ($cmd)"
+    command_exists $cmd
+    echo "$cmd (present)"  
+  done
+
   if [ -f $DIR/default.yml ]; then
     read -p 'Prompt for new settings (will overwrite previous choices)? YES/NO: ' answer
     case "${answer}" in
         [yY]|[yY][eE][sS])
-            init            
+            create_default_yml            
             ;;
         *)
-          echo "Continue..."      
+          echo "Continue with existing default.yml..."      
           ;;
     esac                        
-  else
-    init
+#   else
+#     create_default_yml
   fi 
+  read -p 'Build the system? YES/NO: ' answer
+  case "${answer}" in
+      [yY]|[yY][eE][sS])
+          build            
+          ;;
+      *)
+        echo "Build aborted..."      
+        ;;
+  esac  
+  
+}
 
-  if [ ! -f $DIR/mini.py ]; then
-    mkdir -p $DIR/hacking/masters
-    cd $DIR/hacking/masters
-    git clone https://github.com/panoptix-za/mini-templates
-    cd $DIR
-    ln -sf $DIR/hacking/masters/mini-templates/mini.py
-  fi
+THIS_MACHINE=""
 
-  $DIR/mini.py
+find_machine() {
+  echo "Trying to determine machine name..."
+  DOCKER_MACHINES=$(docker-machine ls --filter 'state=Running' -q)
+  HOTROD_MACHINES=""
   
-  echo "Bootstrapping project..." 
-  pull_project
-  
-#   echo "Checking for  $DIR/salt/roster"
-  
-  if [ ! -f $DIR/salt/roster ]; then
-    echo "" 
-    echo "Please note!" 
-    echo "You still need to create a 'salt/roster' file" 
-    echo "Bootstrap cannot proceed..." 
-    echo "See salt/roster.example" 
+  for i in $DOCKER_MACHINES; do
+     LABELS=$(docker-machine inspect $i --format="{{ range .HostOptions.EngineOptions.Labels }}{{ . }} {{ end }}" 2>&1 | tr ' ' "\n")
+     if [[ "$LABELS" == *"Hotrod=True"* ]]; then
+       for l in $LABELS; do
+          if [[ "$l" == *"HotrodProj"* && "$l" == *"$HOTROD_PROJNAME"* ]]; then
+            THIS_MACHINE=$(trim $i)
+          fi
+        done
+     fi
+  done
+  set +x
+}
+
+weave_proxy() {
+  docker $(docker-machine config $THIS_MACHINE) run --rm --privileged --net=host -v /var/run/docker.sock:/var/run/docker.sock -v /proc:/hostproc -e PROCFS=/hostproc -e DOCKERHUB_USER=weaveworks -e VERSION -e WEAVE_DEBUG -e WEAVE_DOCKER_ARGS -e WEAVEDNS_DOCKER_ARGS -e WEAVEPROXY_DOCKER_ARGS -e WEAVE_PASSWORD -e WEAVE_PORT -e WEAVE_CONTAINER_NAME -e DOCKER_BRIDGE -e PROXY_HOST=127.0.0.1 -e WEAVE_CIDR=none weaveworks/weaveexec:1.0.1 --local launch-proxy -d --no-default-ipam -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
+}
+
+hotrodctl() {
+  echo "Install hotrodctl..."
+}
+
+build() {
+  if [[ "$HOTROD_PROJNAME" == "" ]]; then
+    export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
+    echo "Existing Project Found: $HOTROD_PROJNAME"
+  fi 
+  if [[ "$THIS_MACHINE" == "" ]]; then
+    find_machine  
+  fi 
+  if [[ "$THIS_MACHINE" != "" ]]; then
+    echo "Using: $THIS_MACHINE (for project: $HOTROD_PROJNAME)"  
+  else
+    echo "No machine found for project: $HOTROD_PROJNAME"
+    echo "Perhaps run a helper script in bin/"
+    echo ""
     exit 1
   fi
-  
-  bootstrap
-  
-  highstate
-  
-#   repos
-  
-  updatehotrod
+  weave_proxy
+  hotrodctl
+  eval $(docker-machine env $THIS_MACHINE)
+  DOCKER_HOST="$(echo $DOCKER_HOST  | sed 's/:2376/:12345/')"
+  echo "DOCKER_HOST: $DOCKER_HOST"
+  compose_up
 }
-
-projectupdate(){
-  repos
-  updatehotrod
-}
-
 
 case "$COMMAND" in
-    pull)
-        pull_project
-        ;;
     init)
         doinit 
         ;;
-    bootstrap)
-        bootstrap 
-        ;;
-    highstate)
-        highstate
-        ;;
-#     repos)
-#         repos
-#         ;;    
-    sshtunnel)
-        sshtunnel
-        ;;
-    stoptunnel)
-        stoptunnel
-        ;;        
-    updatehotrod)
-        updatehotrod
-        ;;      
-    update)
-        projectupdate
+    up)
+        compose_up
+        ;;   
+    test)
+        build
         ;;
     *)
         echo "Unknown hotrod command '$COMMAND'" >&2

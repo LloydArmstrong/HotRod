@@ -1,17 +1,13 @@
 variables:
+  hotrod_project_name: {{ env['HOTROD_PROJNAME'] }}
   weave_shared_secret: {{ env['WEAVE_SECRET'] }}
   weave_master_ip: {{ env['HOTROD_HOSTNAME'] }}
-  salt_user: {{ env['USER'] }}
-  salt_ssh_host: {{ env['HOTROD_HOSTNAME'] }}
-  salt_ssh_user: {{ env['HOTROD_HOST_USER'] }}  
-  salt_ssh_sudo: {{ env['HOTROD_HOST_SUDO'] }}    
   hotrod_admin: {{ env['HOTROD_ADMIN_SETTINGS'] }}
   hotrod_projectfs: {{ env['HOTROD_PROJECTFS'] }}
   hotrod_root_host: {{ env['HOTROD_HOSTNAME'] }}
+  ldap_bind_user: cn=admin,dc=com  
+  ldap_bind_pw: {{ env['LDAP_MANAGER_PASSWORD'] }}
   
-  admin:
-    apiurl: http://{{ env['HOTROD_HOSTNAME'] }}:3000/api     
-
   userauth:
     secret: {{ env['HOTROD_AUTH_SECRET'] }}
     url: http://{{ env['HOTROD_HOSTNAME'] }}:3001
@@ -25,13 +21,6 @@ variables:
     # HINT: Use the unencrypted version for now. FIXME
     ldap_bind_pw: {{ env['LDAP_MANAGER_PASSWORD'] }}
         
-  addresses:
-    kibana: http://{{ env['HOTROD_HOSTNAME'] }}:4000
-    auth: http://{{ env['HOTROD_HOSTNAME'] }}:3001
-         
-  # HINT:
-  # Use slappasswd -h {SSHA} -s mypassword | base64
-  # to generate the passwords for the users
   default_users:
      ldap_manager_pw: {{ env['LDAP_MANAGER_PASSWORD'] }}
           
@@ -47,25 +36,4 @@ variables:
          surname: {{ env['DEFAULT_USER_LASTNAME'] }}
          password: {{ env['DEFAULT_USER_PASSWD'] }}
          # HINT: Add additional users as a YAML array      
-
-templates:
-  - src: bin/ssh.sh.orig
-    dst: bin/ssh.sh
-  - src: bin/repo_init.sh.orig
-    dst: bin/repo_init.sh
-  - src: local/ldap/db.ldif.orig
-    dst: local/ldap/db.ldif
-  - src: local/adminauth/local.yml.orig
-    dst: local/adminauth/local.yml    
-  - src: local/kibanaproxy/local.yml.orig
-    dst: local/kibanaproxy/local.yml
-  - src: pillar/weave.sls.orig
-    dst: pillar/weave.sls
-  - src: salt/master.orig
-    dst: salt/master
-  - src: salt/master.d/weave.conf.orig
-    dst: salt/master.d/weave.conf
-  - src: salt/roster.orig
-    dst: salt/roster
-    
-    
+             

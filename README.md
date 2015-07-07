@@ -6,8 +6,11 @@ It is under heavy development, please contact support@panoptix.co.za for assista
 
 ### Getting Started
 
-- Install saltstack (version 2014.7.x, you need salt-ssh)
 - run ./hotrod init
+
+### Features
+
+ - If you place 'once' in the name of the dc-*.yml file (Docker Compose) then it will only be executed once.
  
 ### Components
 
