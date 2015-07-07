@@ -1,3 +1,4 @@
 default.yml
 *.yml.run
 default.yml.prev
+local/*
