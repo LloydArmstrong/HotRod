@@ -253,8 +253,8 @@ doinit() {
           echo "Continue with existing default.yml..."      
           ;;
     esac                        
-#   else
-#     create_default_yml
+   else
+     create_default_yml
   fi 
   read -p 'Build the system? YES/NO: ' answer
   case "${answer}" in
