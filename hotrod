@@ -12,7 +12,7 @@ declare -a TOOLS=("docker" "docker-machine" "docker-compose" "mini.py")
 usage() {
     echo "Usage:"
     echo "hotrod init"
-    echo "hotrod up"
+    echo "hotrod build"
 #     echo "hotrod update"
     exit 1
 }
@@ -37,6 +37,7 @@ export HOTROD_ADMIN_AUTH_SECRET=$(openssl rand -hex 32)
 export LDAP_MANAGER_PASSWORD=$(openssl rand -hex 12)
 [ -n "$HOTROD_PROJECTFS" ]  || export HOTROD_PROJECTFS=https://github.com/panoptix-za/hotrod-projectfs.git
 [ -n "$HOTROD_ADMIN_SETTINGS" ]  || export HOTROD_ADMIN_SETTINGS=https://github.com/panoptix-za/hotrod-admin-settings.git
+[ -n "$THIS_MACHINE" ] || export THIS_MACHINE=""
 
 # utility function to check whether a command can be executed by the shell
 # see http://stackoverflow.com/questions/592620/how-to-check-if-a-program-exists-from-a-bash-script
@@ -83,7 +84,10 @@ create_default_yml() {
     [  -n "$HOTROD_PROJNAME" ] && break 
   done
   
-  find_machine
+
+  if [[ "$THIS_MACHINE" == "" ]]; then
+    find_machine
+  fi 
   if [[ "$THIS_MACHINE" != "" ]]; then
     export HOTROD_HOSTNAME=$(docker-machine ip $THIS_MACHINE)
   fi
@@ -206,19 +210,21 @@ compose_up() {
   
   recurse .
   
-  if [[ ! "$RUNFILES" == "" ]]; then
-    read -p 'Old .run files detected, do you wish do clear and recreate ALL containers? YES/NO: ' answer
-    case "${answer}" in
-        [yY]|[yY][eE][sS])
-            for i in $RUNFILES; do
-              rm $i
-            done            
+  [ -n "$NOPROMPT" ] || {
+    if [[ ! "$RUNFILES" == "" ]]; then
+      read -p 'Old .run files detected, do you wish do clear and recreate ALL containers? YES/NO: ' answer
+      case "${answer}" in
+          [yY]|[yY][eE][sS])
+              for i in $RUNFILES; do
+                rm $i
+              done            
+              ;;
+          *)
+            echo "Skipping 'run once' compose files..."      
             ;;
-        *)
-          echo "Skipping 'run once' compose files..."      
-          ;;
-    esac                        
-  fi
+      esac                        
+    fi
+  }
   
   for i in $TEMPLATES; do
     # Add 'once' to the docker-compose (dc-*.yml) file to only run once
@@ -259,7 +265,7 @@ doinit() {
   read -p 'Build the system? YES/NO: ' answer
   case "${answer}" in
       [yY]|[yY][eE][sS])
-          build            
+          dobuild            
           ;;
       *)
         echo "Build aborted..."      
@@ -267,8 +273,6 @@ doinit() {
   esac  
   
 }
-
-THIS_MACHINE=""
 
 find_machine() {
   echo "Trying to determine machine name..."
@@ -289,14 +293,39 @@ find_machine() {
 }
 
 weave_proxy() {
-  docker $(docker-machine config $THIS_MACHINE) run --rm --privileged --net=host -v /var/run/docker.sock:/var/run/docker.sock -v /proc:/hostproc -e PROCFS=/hostproc -e DOCKERHUB_USER=weaveworks -e VERSION -e WEAVE_DEBUG -e WEAVE_DOCKER_ARGS -e WEAVEDNS_DOCKER_ARGS -e WEAVEPROXY_DOCKER_ARGS -e WEAVE_PASSWORD -e WEAVE_PORT -e WEAVE_CONTAINER_NAME -e DOCKER_BRIDGE -e PROXY_HOST=127.0.0.1 -e WEAVE_CIDR=none weaveworks/weaveexec:1.0.1 --local launch-proxy -d --no-default-ipam -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
+#   docker $(docker-machine config $THIS_MACHINE) run --rm --privileged \
+#   --label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME \
+#   --label=za.co.panoptix.hotrod.startorder=0 \
+#   --net=host -v /var/run/docker.sock:/var/run/docker.sock \
+#   -v /proc:/hostproc \
+#   -e PROCFS=/hostproc \
+#   -e DOCKERHUB_USER=weaveworks \
+#   -e VERSION \
+#   -e WEAVE_DOCKER_ARGS \
+#   -e WEAVEDNS_DOCKER_ARGS \
+#   -e WEAVEPROXY_DOCKER_ARGS \
+#   -e WEAVE_PASSWORD \
+#   -e WEAVE_PORT \
+#   -e WEAVE_CONTAINER_NAME \
+#   -e DOCKER_BRIDGE \
+#   -e PROXY_HOST=127.0.0.1 \
+#   -e WEAVE_CIDR=none \
+#   weaveworks/weaveexec:1.0.1 \
+#   --local launch-proxy -d --no-default-ipam \
+#   -H tcp://0.0.0.0:12345 \
+#   --tlsverify --tlscacert /etc/docker/ca.pem \
+#   --tlscert /etc/docker/server.pem \
+#   --tlskey /etc/docker/server-key.pem
+  docker-compose -f core-hotrod.yml up -d weaveproxy
 }
 
 hotrodctl() {
   echo "Install hotrodctl..."
 }
 
-build() {
+dobuild() {
+  mini.py 
+  
   if [[ "$HOTROD_PROJNAME" == "" ]]; then
     export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
     echo "Existing Project Found: $HOTROD_PROJNAME"
@@ -312,7 +341,10 @@ build() {
     echo ""
     exit 1
   fi
+  eval $(docker-machine env $THIS_MACHINE)
+  set +e
   weave_proxy
+  set -e
   hotrodctl
   eval $(docker-machine env $THIS_MACHINE)
   DOCKER_HOST="$(echo $DOCKER_HOST  | sed 's/:2376/:12345/')"
@@ -320,15 +352,50 @@ build() {
   compose_up
 }
 
+dohotrodctl() {
+  cd $DIR
+
+  mini.py
+
+  if [[ "$HOTROD_PROJNAME" == "" ]]; then
+    export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
+    echo "Existing Project Found: $HOTROD_PROJNAME"
+  fi 
+  if [[ "$THIS_MACHINE" == "" ]]; then
+    find_machine  
+  fi 
+  if [[ "$THIS_MACHINE" != "" ]]; then
+    echo "Using: $THIS_MACHINE (for project: $HOTROD_PROJNAME)"  
+  else
+    echo "No machine found for project: $HOTROD_PROJNAME"
+    echo "Perhaps run a helper script in bin/"
+    echo ""
+    exit 1
+  fi
+  echo "Creating hotrodctl container..."
+  eval $(docker-machine env $THIS_MACHINE) 
+  mkdir -p $DIR/hotrodctl/keys
+  cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctl/keys/
+  set -x
+#   docker build -t hotrodctl .
+#   docker rm -f hotrodctl
+#   docker run --name hotrodctl --net=host --restart=always \
+#     --label=za.co.panoptix.hotrod.startorder=0 \
+#     --label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME \
+#     -d hotrodctl
+  docker-compose -f core-hotrod.yml build hotrodctl
+  docker-compose -f core-hotrod.yml up -d hotrodctl
+}
+
 case "$COMMAND" in
     init)
         doinit 
         ;;
-    up)
-        compose_up
-        ;;   
-    test)
-        build
+    build)
+        dobuild
+        ;;
+    hotrodctl)
+        dohotrodctl
         ;;
     *)
         echo "Unknown hotrod command '$COMMAND'" >&2

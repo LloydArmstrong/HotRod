@@ -1,0 +1,104 @@
+#!/bin/bash
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+STARTTIME=$(date +%s)
+cd $DIR
+
+usage() {
+    echo "Usage:"
+    echo "hotrodctl start"
+    echo "hotrodctl stop"
+    echo "hotrodctl restart SERVICENAME"
+    echo "hotrodctl enter SERVICENAME"
+#     echo "hotrodctl supervise"
+    exit 1
+}
+
+COMMAND=$1
+
+[ $# -gt 0 ] || usage
+
+shift 1
+
+declare -a RUNLEVELS=("core" "0" "1" "2")
+
+[ -n "$HOTROD_DEBUG" ] && {
+  set -x
+}
+
+supervise() {
+  CANDIDATES=$(docker -H=tcp://46.101.250.240:2376 --tls=True ps -a --filter name=weaveproxy --filter status=exited -q)
+  [ -n "$CANDIDATES" ] && {
+    docker -H=tcp://46.101.250.240:2376 --tls=True start $CANDIDATES
+  }
+  
+  while true; do
+    
+    for runlevel in ${RUNLEVELS[@]}; do
+      CANDIDATES=$(docker --tls=True ps -a -q --filter status=exited --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter label=za.co.panoptix.hotrod.startorder=$runlevel)
+      [ -n "$CANDIDATES" ] &&  {
+        docker --tls=True start $CANDIDATES 
+      }
+    done
+    sleep 30
+    
+  done
+}
+
+stopall() {
+  CANDIDATES=$(docker --tls=True ps -q --filter status=running --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=_hotrodctl_)
+  [ -n "$CANDIDATES" ] &&  {
+    docker --tls=True stop $CANDIDATES 
+  }
+  CANDIDATES=$(docker --tls=True ps -q --filter status=running --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME)
+  [ -n "$CANDIDATES" ] &&  {
+    docker --tls=True stop --time=45 $CANDIDATES 
+  }
+}
+
+svcrestart() {
+  CONTAINER=$1
+  CANDIDATES=$(docker --tls=True ps -q --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=$CONTAINER)
+  [ -n "$CANDIDATES" ] &&  {
+    docker --tls=True restart $CANDIDATES 
+  }
+}
+
+
+#Setup hotrodctl
+[ -n "$HOTROD_PROJNAME" ] && {
+  cp /usr/bin/hotrodctl /usr/local/bin/hotrodctl
+}
+
+case "$COMMAND" in
+    supervise) 
+        supervise
+        ;;
+    svcstop)
+        stopall
+        ;;
+    svcrestart)
+        svcrestart $1
+        ;;
+    stop)
+        docker run --net=host hotrod_hotrodctl svcstop
+        ;;
+    start)
+        docker start $(docker ps -a -q --filter label=za.co.panoptix.hotrod.projectname --filter name=_hotrodctl_)
+        ;;   
+    restart)
+        docker run --net=host hotrod_hotrodctl svcrestart $1
+        ;;
+    enter)
+        CONTAINER=$1
+        CANDIDATES=$(docker ps -q  --filter status=running --filter label=za.co.panoptix.hotrod.projectname --filter name=$CONTAINER)
+        [ -n "$CANDIDATES" ] &&  {
+          docker exec -it $(echo $CANDIDATES | cut -f1 -d' ') bash
+        }
+        ;;     
+    *)
+        echo "Unknown hotrodctl command '$COMMAND'" >&2
+        usage
+        ;;
+esac   

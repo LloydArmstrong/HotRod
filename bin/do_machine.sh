@@ -57,8 +57,9 @@ create() {
   echo "HOTROD PROJECT      = $HOTROD_PROJ"
   set -x
   docker-machine create -d digitalocean \
-  --engine-label Hotrod=True \
-  --engine-label HotrodProj=$HOTROD_PROJ \
+  --engine-label "za.co.panoptix.Hotrod=True" \
+  --engine-label "za.co.panoptix.HotrodProj=$HOTROD_PROJ" \
+  --engine-label "za.co.panoptix.manage.port=tcp://127.0.0.1:12345" \
   --digitalocean-size 16gb $1
   set +x
 }

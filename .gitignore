@@ -1,4 +1,8 @@
 default.yml
 *.yml.run
+dc-*.yml
 default.yml.prev
 local/*
+hotrodctl/keys
+hotrodctl/Dockerfile
+core-hotrod.yml

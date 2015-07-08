@@ -14,11 +14,6 @@ RUN apt-get update && \
       python-software-properties \
       software-properties-common
       
-#install saltstack
-RUN add-apt-repository ppa:saltstack/salt && \
-    apt-get update && \
-    apt-get -y install salt-master salt-ssh
-
 #install ldap (for the slapdpasswd util)
 RUN apt-get -y install slapd
 
@@ -32,8 +27,6 @@ RUN curl -L https://github.com/docker/compose/releases/download/1.3.1/docker-com
 #install Docker Machine
 RUN curl -L https://github.com/docker/machine/releases/download/v0.3.0/docker-machine_linux-amd64 > /usr/local/bin/docker-machine && \
     chmod +x /usr/local/bin/docker-machine
-    
-#install Docker Swarm
     
 ADD . /hotrod
 WORKDIR /hotrod
