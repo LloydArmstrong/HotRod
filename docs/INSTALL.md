@@ -1,15 +1,21 @@
 # Getting Started
 
-- Install saltstack (version 2014.7 or greater) 
-- Customise the default.yml file and place it in the project root folder.
-- FIXME: run ./mini.py
-- run ./init.sh
-- Ensure salt has ssh access set up (involves setting up salt/roster file)
-- run ./bin/bootstrap.sh
-- run ./bin/cloud_highstate.sh
+- Install docker-machine (see [https://docs.docker.com/machine/](https://docs.docker.com/machine/#installation))
+  
+- Install docker-compose (see [https://docs.docker.com/compose/](https://docs.docker.com/compose/#installation-and-set-up))
 
-# Do something useful
+- Create a docker-machine based server
 
-1) Create:
-   project/hotrod-admin.git 
-   project/hotrod-projectfs.git 
+  ```
+  ./bin/vbox_machine.sh create myhotrodserver Hotrod
+  ```
+  
+  This will create a server with the default project named `Hotrod`. The project should be unique for each Hotrod instance.
+  
+- run `./hotrod init` and follow the prompts
+
+# Do something custom
+
+There is a special folder called `local`. Add you docker-compose files there to your hearts content. Look at the dc-elk.yml.orig.tpl file for examples. The labels, etc should be used too.
+
+
