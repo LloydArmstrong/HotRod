@@ -8,7 +8,7 @@ It is under heavy development, please contact support@panoptix.co.za for assista
 
 - Install docker-machine (see [https://docs.docker.com/machine/](https://docs.docker.com/machine/#installation))
   
-- Install docker-compose (see [https://docs.docker.com/compose/](https://docs.docker.com/compose/#installation-and-set-up))
+- Install docker-compose (see [https://docs.docker.com/compose/](https://docs.docker.com/compose/install/#install-compose))
 
 - Create a docker-machine based server
 
