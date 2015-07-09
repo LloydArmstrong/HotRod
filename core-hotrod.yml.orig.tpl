@@ -21,7 +21,7 @@ weaveproxy:
     - DOCKER_BRIDGE
     - PROXY_HOST=127.0.0.1
     - WEAVE_CIDR=none
-  command: --local launch-proxy -d --no-default-ipam -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
+  command: --local launch-proxy --no-default-ipalloc -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
 
 hotrodctl:
   build: hotrodctl

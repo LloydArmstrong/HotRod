@@ -1,6 +1,6 @@
 elasticsearch:
   hostname: elasticsearch
-  image: panoptix/elasticsearch:latest
+  image: panoptix/elasticsearch
   environment:
     - ES_HEAP_SIZE=3g
     - WEAVE_CIDR=169.254.50.1/24 169.254.51.1/24 169.254.52.1/24 169.254.53.1/24 169.254.54.1/24
@@ -13,7 +13,7 @@ elasticsearch:
 
 kibana:
   hostname: kibana
-  image: panoptix/kibana:kibana-4
+  image: panoptix/kibana
   log_driver: none
   environment:
     - WEAVE_CIDR=169.254.50.2/24 

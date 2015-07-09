@@ -21,7 +21,7 @@ do
 done
 
 usage() {
-    echo "This script creates machines on Digital Ocean, and sets the correct Docker labels for the Docker Engine."
+    echo "This script creates machines on Virtualbox, and sets the correct Docker labels for the Docker Engine."
     echo ""
     echo "Usage:"
     echo " create MYMACHINENAME MYHOTRODPROJECT"
@@ -50,6 +50,7 @@ create() {
   docker-machine create -d virtualbox \
   --engine-label Hotrod=True \
   --engine-label HotrodProj=$HOTROD_PROJ \
+  $DOCKER_MACHINE_CREATE \
   $1
   set +x
 }

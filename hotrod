@@ -179,6 +179,26 @@ recurse() {
 }
 
 compose_up() {
+  COMPOSE_FLAGS=$1
+  if [[ "$HOTROD_PROJNAME" == "" ]]; then
+    export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
+    echo "Existing Project Found: $HOTROD_PROJNAME"
+  fi 
+  
+  if [[ "$THIS_MACHINE" == "" ]]; then
+    find_machine  
+    eval $(docker-machine env $THIS_MACHINE)
+    set +e
+  fi 
+  if [[ "$THIS_MACHINE" != "" ]]; then
+    echo "Using: $THIS_MACHINE (for project: $HOTROD_PROJNAME)"  
+  else
+    echo "No machine found for project: $HOTROD_PROJNAME"
+    echo "Perhaps run a helper script in bin/"
+    echo ""
+    exit 1
+  fi
+
   cd $DIR
   
   mini.py
@@ -206,8 +226,8 @@ compose_up() {
     if [[ "$i" != *-once* || ! -f ${i}.run ]]; then
       echo ">> docker-compose -f $i build"
       docker-compose -f $i build
-      echo ">> docker-compose -f $i up -d"      
-      docker-compose -f $i up -d
+      echo ">> docker-compose -f $i up $COMPOSE_FLAGS -d"      
+      docker-compose -f $i up $COMPOSE_FLAGS -d
       touch ${i}.run
     fi
   done
@@ -251,6 +271,7 @@ doinit() {
 
 find_machine() {
   echo "Trying to determine machine name..."
+#   set -x
   DOCKER_MACHINES=$(docker-machine ls --filter 'state=Running' -q)
   HOTROD_MACHINES=""
   
@@ -258,7 +279,8 @@ find_machine() {
      LABELS=$(docker-machine inspect $i --format="{{ range .HostOptions.EngineOptions.Labels }}{{ . }} {{ end }}" 2>&1 | tr ' ' "\n")
      if [[ "$LABELS" == *"Hotrod=True"* ]]; then
        for l in $LABELS; do
-          if [[ "$l" == *"HotrodProj"* && "$l" == *"$HOTROD_PROJNAME"* ]]; then
+          echo $l
+          if [[ "$l" == *"HotrodProj"* && "$l" == *"=$HOTROD_PROJNAME" ]]; then
             THIS_MACHINE=$(trim $i)
           fi
         done
@@ -329,12 +351,7 @@ dohotrodctl() {
   mkdir -p $DIR/hotrodctl/keys
   cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctl/keys/
   set -x
-#   docker build -t hotrodctl .
-#   docker rm -f hotrodctl
-#   docker run --name hotrodctl --net=host --restart=always \
-#     --label=za.co.panoptix.hotrod.startorder=0 \
-#     --label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME \
-#     -d hotrodctl
+  
   docker-compose -f core-hotrod.yml build hotrodctl
   docker-compose -f core-hotrod.yml up -d hotrodctl
 }
@@ -348,6 +365,10 @@ case "$COMMAND" in
         ;;
     hotrodctl)
         dohotrodctl
+        ;;
+    update)
+        export NOPROMPT=1
+        compose_up --x-smart-recreate
         ;;
     *)
         echo "Unknown hotrod command '$COMMAND'" >&2
