@@ -1,5 +1,5 @@
-weaveproxy:
-  image: weaveworks/weaveexec:latest
+wproxy:
+  image: weaveworks/weaveexec:1.0.1
   labels:
     za.co.panoptix.hotrod.startorder: "core"
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
@@ -21,12 +21,14 @@ weaveproxy:
     - DOCKER_BRIDGE
     - PROXY_HOST=127.0.0.1
     - WEAVE_CIDR=none
-  command: --local launch-proxy --no-default-ipalloc -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
+  command: --local launch-proxy --no-default-ipam -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
 
 hotrodctl:
   build: hotrodctl
   net: host
   restart: always
+#   environment:
+#     - HOTROD_DEBUG=1 
   volumes:
     - /usr/local/bin:/usr/local/bin
   labels:

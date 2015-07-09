@@ -28,9 +28,10 @@ declare -a RUNLEVELS=("core" "0" "1" "2")
 }
 
 supervise() {
-  CANDIDATES=$(docker -H=tcp://46.101.250.240:2376 --tls=True ps -a --filter name=weaveproxy --filter status=exited -q)
+  CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 --tls=True ps -a --filter name=weaveproxy --filter status=exited -q)
   [ -n "$CANDIDATES" ] && {
-    docker -H=tcp://46.101.250.240:2376 --tls=True start $CANDIDATES
+    echo "Start..."
+    docker -H=tcp://127.0.0.1:2376 --tls=True start $CANDIDATES
   }
   
   while true; do
@@ -38,6 +39,7 @@ supervise() {
     for runlevel in ${RUNLEVELS[@]}; do
       CANDIDATES=$(docker --tls=True ps -a -q --filter status=exited --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter label=za.co.panoptix.hotrod.startorder=$runlevel)
       [ -n "$CANDIDATES" ] &&  {
+        echo 'Start...'
         docker --tls=True start $CANDIDATES 
       }
     done
@@ -49,10 +51,12 @@ supervise() {
 stopall() {
   CANDIDATES=$(docker --tls=True ps -q --filter status=running --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=_hotrodctl_)
   [ -n "$CANDIDATES" ] &&  {
+    echo 'Stop...'
     docker --tls=True stop $CANDIDATES 
   }
   CANDIDATES=$(docker --tls=True ps -q --filter status=running --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME)
   [ -n "$CANDIDATES" ] &&  {
+    echo 'Stop...'
     docker --tls=True stop --time=45 $CANDIDATES 
   }
 }
@@ -61,6 +65,7 @@ svcrestart() {
   CONTAINER=$1
   CANDIDATES=$(docker --tls=True ps -q --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=$CONTAINER)
   [ -n "$CANDIDATES" ] &&  {
+    echo 'Restart...'
     docker --tls=True restart $CANDIDATES 
   }
 }

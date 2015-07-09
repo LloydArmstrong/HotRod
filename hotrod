@@ -224,6 +224,9 @@ compose_up() {
   for i in $TEMPLATES; do
     # Add 'once' to the docker-compose (dc-*.yml) file to only run once
     if [[ "$i" != *-once* || ! -f ${i}.run ]]; then
+      [ -n "$ALWAYSPULL" ] && {
+        docker-compose -f $i pull
+      }
       echo ">> docker-compose -f $i build"
       docker-compose -f $i build
       echo ">> docker-compose -f $i up $COMPOSE_FLAGS -d"      
@@ -279,7 +282,7 @@ find_machine() {
      LABELS=$(docker-machine inspect $i --format="{{ range .HostOptions.EngineOptions.Labels }}{{ . }} {{ end }}" 2>&1 | tr ' ' "\n")
      if [[ "$LABELS" == *"Hotrod=True"* ]]; then
        for l in $LABELS; do
-          echo $l
+#           echo $l
           if [[ "$l" == *"HotrodProj"* && "$l" == *"=$HOTROD_PROJNAME" ]]; then
             THIS_MACHINE=$(trim $i)
           fi
@@ -290,11 +293,7 @@ find_machine() {
 }
 
 weave_proxy() {
-  docker-compose -f core-hotrod.yml up -d weaveproxy
-}
-
-hotrodctl() {
-  echo "Install hotrodctl..."
+  docker-compose -f core-hotrod.yml up -d wproxy
 }
 
 dobuild() {
@@ -319,7 +318,7 @@ dobuild() {
   set +e
   weave_proxy
   set -e
-  hotrodctl
+  dohotrodctl
   eval $(docker-machine env $THIS_MACHINE)
   DOCKER_HOST="$(echo $DOCKER_HOST  | sed 's/:2376/:12345/')"
   echo "DOCKER_HOST: $DOCKER_HOST"
@@ -350,7 +349,7 @@ dohotrodctl() {
   eval $(docker-machine env $THIS_MACHINE) 
   mkdir -p $DIR/hotrodctl/keys
   cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctl/keys/
-  set -x
+#   set -x
   
   docker-compose -f core-hotrod.yml build hotrodctl
   docker-compose -f core-hotrod.yml up -d hotrodctl
