@@ -1,5 +1,7 @@
 ## HotRod
 
+[![Build status](https://badge.buildkite.com/752b577f704f463f76358ac3633c483d1e788aab00963d87e0.svg)](https://buildkite.com/panoptix/hotrod-oss)
+
 HotRod is an opinionated 'Platform' for analytics. It contains the building blocks and automation to enable running logging as a PaaS. 
 
 It is under heavy development, please contact support@panoptix.co.za for assistance.
