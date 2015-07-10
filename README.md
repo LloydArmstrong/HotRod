@@ -16,6 +16,12 @@ It is under heavy development, please contact support@panoptix.co.za for assista
   ./bin/vbox_machine.sh create myhotrodserver Hotrod
   ```
   
+  To view your machine run:
+  
+  ```
+  docker-machine ls
+  ```
+  
   This will create a server with the default project named `Hotrod`. The project should be unique for each Hotrod instance.
   
 - run `./hotrod init` and follow the prompts

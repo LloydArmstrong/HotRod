@@ -1,7 +1,6 @@
 wproxy:
   image: weaveworks/weaveexec:1.0.1
   labels:
-    za.co.panoptix.hotrod.startorder: "core"
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
   net: host
   privileged: true
