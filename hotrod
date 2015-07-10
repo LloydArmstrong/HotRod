@@ -35,6 +35,9 @@ export WEAVE_SECRET=$(openssl rand -hex 32)
 export HOTROD_AUTH_SECRET=$(openssl rand -hex 32)
 export HOTROD_ADMIN_AUTH_SECRET=$(openssl rand -hex 32)
 export LDAP_MANAGER_PASSWORD=$(openssl rand -hex 12)
+export DEFAULT_USER_FIRSTNAME=Default
+export DEFAULT_USER_LASTNAME=User
+export DEFAULT_USER=default
 [ -n "$HOTROD_PROJECTFS" ]  || export HOTROD_PROJECTFS=https://github.com/panoptix-za/hotrod-projectfs.git
 [ -n "$HOTROD_ADMIN_SETTINGS" ]  || export HOTROD_ADMIN_SETTINGS=https://github.com/panoptix-za/hotrod-admin-settings.git
 [ -n "$THIS_MACHINE" ] || export THIS_MACHINE=""
@@ -71,10 +74,12 @@ trim() {
     echo $*
 }
 
-create_default_yml() {
+prompts_default_yml() {
   clear
   echo "Welcome to the HotRod initialisation script"
   echo ""
+  
+  [ -n "$NOPROMPT" ] || {
   
   export HOTROD_PROJNAME=Hotrod
   
@@ -155,9 +160,25 @@ create_default_yml() {
   export DEFAULT_USER_LASTNAME  
   export DEFAULT_USER_PASSWD
   
+  }
+  
+}  
+  
+create_default_yml() {
+
+  [[ -n "$HOTROD_PROJNAME" && -n "$HOTROD_HOSTNAME" && -n "$ADMIN_PASSWD" && -n "$DEFAULT_USER_PASSWD" ]] || {
+    echo "HOTROD_PROJNAME, HOTROD_HOSTNAME, ADMIN_PASSWD or DEFAULT_USER_PASSWD was not set, exiting..."
+    exit 1
+  }
+  
   [ -f $DIR/default.yml ] && mv $DIR/default.yml $DIR/default.yml.prev
   make_config
     
+}
+
+doenvinit() {
+  [ -f $DIR/default.yml ] && mv $DIR/default.yml $DIR/default.yml.prev
+  make_config
 }
 
 TEMPLATES=""
@@ -246,29 +267,41 @@ doinit() {
     command_exists $cmd
     echo "$cmd (present)"  
   done
-
+  
+  [ -n "$NOPROMPT" ] || {
   if [ -f $DIR/default.yml ]; then
     read -p 'Prompt for new settings (will overwrite previous choices)? YES/NO: ' answer
     case "${answer}" in
         [yY]|[yY][eE][sS])
-            create_default_yml            
+            prompts_default_yml            
             ;;
         *)
           echo "Continue with existing default.yml..."      
           ;;
     esac                        
    else
-     create_default_yml
+     prompts_default_yml
   fi 
-  read -p 'Build the system? YES/NO: ' answer
-  case "${answer}" in
-      [yY]|[yY][eE][sS])
-          dobuild            
-          ;;
-      *)
-        echo "Build aborted..."      
-        ;;
-  esac  
+  }
+  
+  create_default_yml
+  
+  if [ ! -n "$NOPROMPT" ]; then
+  
+   read -p 'Build the system? YES/NO: ' answer
+   case "${answer}" in
+       [yY]|[yY][eE][sS])
+           dobuild            
+           ;;
+       *)
+         echo "Build aborted..."      
+         exit 1
+         ;;
+   esac  
+  
+  else
+    dobuild
+  fi
   
 }
 
