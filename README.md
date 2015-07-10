@@ -10,6 +10,13 @@ It is under heavy development, please contact support@panoptix.co.za for assista
   
 - Install docker-compose (see [https://docs.docker.com/compose/](https://docs.docker.com/compose/install/#install-compose))
 
+- Install HotRod
+
+  ```
+  git clone https://github.com/panoptix-za/HotRod.git
+  cd HotRod
+  ```
+
 - Create a docker-machine based server
 
   ```
