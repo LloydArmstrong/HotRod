@@ -10,6 +10,13 @@ It is under heavy development, please contact support@panoptix.co.za for assista
   
 - Install docker-compose (see [https://docs.docker.com/compose/](https://docs.docker.com/compose/install/#install-compose))
 
+- Install Panoptix Mini Templates
+
+  ```
+  git clone https://github.com/panoptix-za/mini-templates.git
+  cp mini-templates/mini.py /usr/local/bin
+  ```
+
 - Install HotRod
 
   ```
@@ -19,11 +26,13 @@ It is under heavy development, please contact support@panoptix.co.za for assista
 
 - Create a docker-machine based server
 
-```
-export DIGITALOCEAN_ACCESS_TOKEN=my_api_token
-export DIGITALOCEAN_REGION=ams3
-./bin/do_machine.sh create myhotrodserver Hotrod
-```
+  Replace `my_api_token` and `ams3` as appropriate below.
+
+  ```
+  export DIGITALOCEAN_ACCESS_TOKEN=my_api_token
+  export DIGITALOCEAN_REGION=ams3
+  ./bin/do_machine.sh create myhotrodserver Hotrod
+  ```
   
   To view your machine run:
   
