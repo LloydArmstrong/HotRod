@@ -19,9 +19,11 @@ It is under heavy development, please contact support@panoptix.co.za for assista
 
 - Create a docker-machine based server
 
-  ```
-  ./bin/vbox_machine.sh create myhotrodserver Hotrod
-  ```
+```
+export DIGITALOCEAN_ACCESS_TOKEN=my_api_token
+export DIGITALOCEAN_REGION=ams3
+./bin/do_machine.sh create myhotrodserver Hotrod
+```
   
   To view your machine run:
   
