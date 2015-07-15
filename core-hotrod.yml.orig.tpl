@@ -1,4 +1,7 @@
 wproxy:
+  extends:
+    file: common-services.yml
+    service: hotrod
   image: weaveworks/weaveexec:1.0.1
   labels:
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
@@ -21,8 +24,12 @@ wproxy:
     - PROXY_HOST=127.0.0.1
     - WEAVE_CIDR=none
   command: --local launch-proxy --no-default-ipam -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
+  
 
 hotrodctl:
+  extends:
+    file: common-services.yml
+    service: hotrod
   build: hotrodctl
   net: host
   restart: always

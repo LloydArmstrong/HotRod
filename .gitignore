@@ -1,6 +1,8 @@
+env
 default.yml
 *.yml.run
 dc-*.yml
+common-services.yml
 default.yml.prev
 local/*
 hotrodctl/keys
