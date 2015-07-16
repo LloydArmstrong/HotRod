@@ -18,3 +18,4 @@ set -e
 echo "+++ create machine $BKHOTROD Hotrod"
 ./bin/do_machine.sh create $BKHOTROD Hotrod
 
+
