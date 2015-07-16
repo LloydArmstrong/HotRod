@@ -9,8 +9,9 @@ export HOTROD_PROJNAME=Hotrod
 export HOTROD_HOSTNAME=$(docker-machine ip $BKHOTROD)
 export NOPROMPT=Yes
 
-echo "--- Log on to Docker Hub"
+eval $(docker-machine env $BKHOTROD)
 
+echo "--- Log on to Docker Hub"
 [ -n "DOCKER_HUB_USERNAME" ] && {
   docker login \
   -e $DOCKER_HUB_EMAIL \
