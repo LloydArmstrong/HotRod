@@ -1,7 +1,7 @@
 wproxy:
   extends:
     file: common-services.yml
-    service: hotrod
+    service: hotrod-core
   image: weaveworks/weaveexec:1.0.1
   labels:
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
@@ -29,7 +29,7 @@ wproxy:
 hotrodctl:
   extends:
     file: common-services.yml
-    service: hotrod
+    service: hotrod-core
   build: hotrodctl
   net: host
   restart: always
