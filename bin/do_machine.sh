@@ -28,8 +28,10 @@ usage() {
     echo ""
     echo ""
     echo "Env Variables supported:"
-    echo "  DIGITALOCEAN_REGION"
     echo "  DIGITALOCEAN_ACCESS_TOKEN"
+    echo "  DIGITALOCEAN_REGION"
+    echo "  DIGITALOCEAN_SIZE"    
+    echo ""
     exit 1
 }
 
@@ -48,6 +50,7 @@ create() {
   echo ""
   echo "Creating $1"
   [ -n "$DIGITALOCEAN_REGION" ] || export DIGITALOCEAN_REGION=nyc3
+  [ -n "$DIGITALOCEAN_SIZE" ] || export DIGITALOCEAN_SIZE=4gb  
   if [[ "$2" != "" ]]; then 
     export HOTROD_PROJ=$2
   else 
@@ -55,13 +58,15 @@ create() {
   fi
 
   echo "DIGITALOCEAN_REGION = $DIGITALOCEAN_REGION"
-  echo "HOTROD PROJECT      = $HOTROD_PROJ"
+  echo "DIGITALOCEAN_SIZE   = $DIGITALOCEAN_SIZE"
+  echo "HOTROD_PROJECT      = $HOTROD_PROJ"
+
   set -x
   docker-machine create -d digitalocean \
   --engine-label "za.co.panoptix.Hotrod=True" \
   --engine-label "za.co.panoptix.HotrodProj=$HOTROD_PROJ" \
   --engine-label "za.co.panoptix.manage.port=tcp://127.0.0.1:12345" \
-  --digitalocean-size 16gb $1
+  $1
   set +x
 }
 
