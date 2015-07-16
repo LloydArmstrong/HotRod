@@ -5,7 +5,7 @@ BKHOTROD=$PROJNAME-bkhotrod-$BUILDKITE_BUILD_NUMBER
 
 echo "--- check if $BKHOTROD machine exists"
 
-CANDIDATES=$(docker-machine ls -q | grep $BKHOTROD)
+CANDIDATES=$(docker-machine ls -q | grep $PROJNAME-bkhotrod)
 
 set -e
 
