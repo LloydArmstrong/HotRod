@@ -3,7 +3,7 @@
 set -eo pipefail
 
 PROJNAME=$(echo $BUILDKITE_PROJECT_SLUG | cut -f1 -d'/')
-BKHOTROD=$bkhotrod-$BUILDKITE_BUILD_NUMBER
+BKHOTROD=$PROJNAME-bkhotrod-$BUILDKITE_BUILD_NUMBER
 
 export HOTROD_PROJNAME=Hotrod
 export HOTROD_HOSTNAME=$(docker-machine ip $BKHOTROD)
