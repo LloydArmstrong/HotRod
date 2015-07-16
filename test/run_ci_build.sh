@@ -1,10 +1,9 @@
 #!/bin/bash
 
-# Check if there are existing machines...
+BKHOTROD=bkhotrod-$BUILDKITE_BUILD_NUMBER
+echo "--- check if $BKHOTROD machine exists"
 
-echo "--- check if bkhotrod machine exists"
-
-CANDIDATES=$(docker-machine ls -q | grep bkhotrod)
+CANDIDATES=$(docker-machine ls -q | grep $BKHOTROD)
 
 set -e
 
@@ -14,6 +13,6 @@ set -e
   sleep 30
 }
 
-echo "+++ create machine bkhotrod Hotrod"
-./bin/do_machine.sh create bkhotrod Hotrod
+echo "+++ create machine $BKHOTROD Hotrod"
+./bin/do_machine.sh create $BKHOTROD Hotrod
 

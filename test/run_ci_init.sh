@@ -2,8 +2,9 @@
 
 set -eo pipefail
 
+BKHOTROD=bkhotrod-$BUILDKITE_BUILD_NUMBER
 export HOTROD_PROJNAME=Hotrod
-export HOTROD_HOSTNAME=$(docker-machine ip bkhotrod)
+export HOTROD_HOSTNAME=$(docker-machine ip $BKHOTROD)
 export NOPROMPT=Yes
 
 echo "--- Log on to Docker Hub"
