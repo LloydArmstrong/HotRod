@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJNAME=$(echo $BUILDKITE_PROJECT_SLUG | cut -f1 -d'/')
+PROJNAME=$(echo $BUILDKITE_PROJECT_SLUG | cut -f2 -d'/')
 BKHOTROD=$PROJNAME-bkhotrod-$BUILDKITE_BUILD_NUMBER
 
 echo "--- check if $BKHOTROD machine exists"
