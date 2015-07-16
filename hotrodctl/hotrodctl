@@ -90,13 +90,19 @@ case "$COMMAND" in
         svcrestart $1
         ;;
     stop)
-        docker run --net=host hotrod_hotrodctl svcstop
+        CANDITATES=$(docker images | grep hotrodctl | awk '{ print $1; }')
+        [ -n "$CANDIDATES" ] && {
+          docker run --net=host $CANDIDATES svcstop
+        }
         ;;
     start)
         docker start $(docker ps -a -q --filter label=za.co.panoptix.hotrod.projectname --filter name=_hotrodctl_)
         ;;   
     restart)
-        docker run --net=host hotrod_hotrodctl svcrestart $1
+        CANDITATES=$(docker images | grep hotrodctl | awk '{ print $1; }')
+        [ -n "$CANDIDATES" ] && {
+          docker run --net=host $CANDITATES svcrestart $1
+        }
         ;;
     enter)
         CONTAINER=$1
