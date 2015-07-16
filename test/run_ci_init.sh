@@ -15,7 +15,7 @@ echo "--- Log on to Docker Hub"
   -u $DOCKER_HUB_USERNAME
 }
 
-echo "+++ Run Docker Init"
+echo "+++ Run HotRod Init"
 
 ./hotrod init
 

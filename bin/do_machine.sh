@@ -29,6 +29,7 @@ usage() {
     echo ""
     echo "Env Variables supported:"
     echo "  DIGITALOCEAN_REGION"
+    echo "  DIGITALOCEAN_ACCESS_TOKEN"
     exit 1
 }
 
@@ -73,4 +74,5 @@ case "$COMMAND" in
         echo "Unknown command '$COMMAND'" >&2
         usage
         ;;
-esac  
+esac
+ 
