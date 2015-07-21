@@ -1,4 +1,7 @@
 elasticsearch:
+  extends:
+    file: common-services.yml
+    service: hotrod-service
   hostname: elasticsearch
   image: panoptix/elasticsearch
   environment:
@@ -9,9 +12,11 @@ elasticsearch:
     - 127.0.0.1:9300:9300
   labels:
     za.co.panoptix.hotrod.startorder: "0"
-    za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
 
 kibana:
+  extends:
+    file: common-services.yml
+    service: hotrod-service
   hostname: kibana
   image: panoptix/kibana
   log_driver: none
@@ -23,9 +28,11 @@ kibana:
     - elasticsearch:169.254.50.1
   labels:
     za.co.panoptix.hotrod.startorder: "1"
-    za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
      
 rsyslog:
+  extends:
+    file: common-services.yml
+    service: hotrod-service
   hostname: rsyslog
   image: panoptix/rsyslog:elasticsearch
   environment:
@@ -36,6 +43,5 @@ rsyslog:
     - 127.0.0.1:1514:514/tcp
   labels:
     za.co.panoptix.hotrod.startorder: "1"
-    za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
     
 

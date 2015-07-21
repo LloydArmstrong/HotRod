@@ -165,20 +165,21 @@ prompts_default_yml() {
 }  
   
 create_default_yml() {
-
-  [[ -n "$HOTROD_PROJNAME" && -n "$HOTROD_HOSTNAME" && -n "$ADMIN_PASSWD" && -n "$DEFAULT_USER_PASSWD" ]] || {
-    echo "HOTROD_PROJNAME, HOTROD_HOSTNAME, ADMIN_PASSWD or DEFAULT_USER_PASSWD was not set, exiting..."
-    exit 1
-  }
-  
-  [ -f $DIR/default.yml ] && mv $DIR/default.yml $DIR/default.yml.prev
-  make_config
-    
+  [ -n "$USEEXISTING" ] || {
+    [[ -n "$HOTROD_PROJNAME" && -n "$HOTROD_HOSTNAME" && -n "$ADMIN_PASSWD" && -n "$DEFAULT_USER_PASSWD" ]] || {
+      echo "HOTROD_PROJNAME, HOTROD_HOSTNAME, ADMIN_PASSWD or DEFAULT_USER_PASSWD was not set, exiting..."
+      exit 1
+    }
+    [ -f $DIR/default.yml ] && mv $DIR/default.yml $DIR/default.yml.prev    
+    make_config
+  }  
 }
 
 doenvinit() {
-  [ -f $DIR/default.yml ] && mv $DIR/default.yml $DIR/default.yml.prev
-  make_config
+  [ -n "$USEEXISTING" ] || {
+    [ -f $DIR/default.yml ] && mv $DIR/default.yml $DIR/default.yml.prev
+    make_config
+  }
 }
 
 TEMPLATES=""
@@ -277,6 +278,7 @@ doinit() {
             ;;
         *)
           echo "Continue with existing default.yml..."      
+          export USEEXISTING=True
           ;;
     esac                        
    else
