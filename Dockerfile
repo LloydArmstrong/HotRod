@@ -21,7 +21,7 @@ RUN apt-get -y install slapd
 RUN curl -sSL https://get.docker.com/ubuntu/ | sudo sh
 
 #install Docker Compose
-RUN curl -L https://github.com/docker/compose/releases/download/1.3.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
+RUN curl -L https://github.com/docker/compose/releases/download/1.3.3/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
 #install Docker Machine
