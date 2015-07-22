@@ -101,7 +101,7 @@ case "$COMMAND" in
     restart)
         CANDIDATES=$(docker images | grep hotrodctl | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
-          docker run --net=host $CANDITATES svcrestart $1
+          docker run --net=host $CANDIDATES svcrestart $1
         }
         ;;
     enter)
