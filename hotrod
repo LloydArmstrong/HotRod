@@ -13,6 +13,7 @@ usage() {
     echo "Usage:"
     echo "hotrod init"
     echo "hotrod build"
+    echo "hotrod env"
 #     echo "hotrod update"
     exit 1
 }
@@ -200,6 +201,14 @@ recurse() {
  done
 }
 
+find_project() {
+  COMPOSE_FLAGS=$1
+  if [[ "$HOTROD_PROJNAME" == "" ]]; then
+    export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
+    echo "# Existing Project Found: $HOTROD_PROJNAME"
+  fi 
+}
+
 compose_up() {
   COMPOSE_FLAGS=$1
   if [[ "$HOTROD_PROJNAME" == "" ]]; then
@@ -308,7 +317,7 @@ doinit() {
 }
 
 find_machine() {
-  echo "Trying to determine machine name..."
+  echo "# Trying to determine machine name..."
 #   set -x
   DOCKER_MACHINES=$(docker-machine ls --filter 'state=Running' -q)
   HOTROD_MACHINES=""
@@ -326,6 +335,16 @@ find_machine() {
   done
   set +x
 }
+
+doenv() {
+  find_project
+  find_machine
+  echo "# This machine: $THIS_MACHINE"
+  THIS_ENV=$(docker-machine env $THIS_MACHINE)
+  echo "$THIS_ENV" | sed -e 's/:2376/:12345/g' | sed -e "s/docker-machine env $THIS_MACHINE/\.\/hotrod env/g"
+  exit 1
+}
+
 
 weave_proxy() {
   docker-compose -f core-hotrod.yml up -d wproxy
@@ -399,6 +418,9 @@ case "$COMMAND" in
         ;;
     hotrodctl)
         dohotrodctl
+        ;;
+    env)
+        doenv
         ;;
     update)
         export NOPROMPT=1
