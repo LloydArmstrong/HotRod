@@ -37,3 +37,7 @@ variables:
          password: {{ env['DEFAULT_USER_PASSWD'] }}
          # HINT: Add additional users as a YAML array      
              
+collect:
+  - regex: dc-\d{2}.+\.orig\.tpl
+    dst: docker-compose.yml
+    

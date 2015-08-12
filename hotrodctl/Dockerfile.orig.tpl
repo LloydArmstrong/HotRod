@@ -27,3 +27,4 @@ ADD keys /keys
 ADD hotrodctl /usr/bin/hotrodctl
 ENTRYPOINT ["/usr/bin/hotrodctl"]
 CMD ["supervise"]
+

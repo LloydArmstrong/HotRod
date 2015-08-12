@@ -20,4 +20,4 @@ hotrod-service:
   labels:
     za.co.panoptix.hotrod.startorder: "2"
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
-    
+
