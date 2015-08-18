@@ -58,6 +58,7 @@ sys.stdout.write(
         (sys.stdin.read()
     ).render(env=os.environ))"
 
+
 make_config() {
     echo "Generating config file..."
     cat ${CONFIGTEMPLATE} \
@@ -90,7 +91,6 @@ prompts_default_yml() {
     [  -n "$HOTROD_PROJNAME" ] && break 
   done
   
-
   if [[ "$THIS_MACHINE" == "" ]]; then
     find_machine
   fi 
@@ -187,18 +187,19 @@ TEMPLATES=""
 RUNFILES=""
 
 recurse() {
- for i in "$1"/*;do
-    if [ -f "$i" ]; then
-        if [[ "$i" == *dc-* && "$i" == *.yml.run ]]; then
-           RUNFILES="$RUNFILES $i"
-        fi 
-        if [[ "$i" == *dc-* && "$i" == *.yml ]]; then           
-           TEMPLATES="$TEMPLATES $i"
-        fi
-    elif [ -d "$i" ];then
-        recurse "$i"
-    fi
- done
+#  for i in "$1"/*;do
+#     if [ -f "$i" ]; then
+#         if [[ "$i" == *dc-* && "$i" == *.yml.run ]]; then
+#            RUNFILES="$RUNFILES $i"
+#         fi 
+#         if [[ "$i" == *dc-* && "$i" == *.yml ]]; then           
+#            TEMPLATES="$TEMPLATES $i"
+#         fi
+#     elif [ -d "$i" ];then
+#         recurse "$i"
+#     fi
+#  done
+  TEMPLATES="docker-compose.yml"
 }
 
 find_project() {
@@ -424,7 +425,7 @@ case "$COMMAND" in
         ;;
     update)
         export NOPROMPT=1
-        compose_up --x-smart-recreate
+        compose_up 
         ;;
     *)
         echo "Unknown hotrod command '$COMMAND'" >&2
