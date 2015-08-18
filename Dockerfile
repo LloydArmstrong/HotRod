@@ -1,7 +1,7 @@
 FROM ubuntu:14.04.2
 MAINTAINER Stephan Buys <stephan.buys@panoptix.co.za>
 
-ENV REFRESHED_ON "11 Aug 2015"
+ENV REFRESHED_ON "18 Aug 2015"
 
 RUN apt-get update && \
     apt-get -y install \
@@ -25,7 +25,7 @@ RUN curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-com
     chmod +x /usr/local/bin/docker-compose
 
 #install Docker Machine
-RUN curl -L https://github.com/docker/machine/releases/download/v0.4.0/docker-machine_linux-amd64 > /usr/local/bin/docker-machine && \
+RUN curl -L https://github.com/docker/machine/releases/download/v0.4.1/docker-machine_linux-amd64 > /usr/local/bin/docker-machine && \
     chmod +x /usr/local/bin/docker-machine
     
 ADD . /hotrod
