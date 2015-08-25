@@ -2,14 +2,14 @@
 
 [![Build status](https://badge.buildkite.com/752b577f704f463f76358ac3633c483d1e788aab00963d87e0.svg)](https://buildkite.com/panoptix/hotrod-oss)
 
-HotRod is an opinionated 'Platform' for analytics. It contains the building blocks and automation to enable running logging as a PaaS. 
+HotRod is an opinionated 'Platform' for analytics. It contains the building blocks and automation to enable running logging as a PaaS.
 
 It is under heavy development, please contact support@panoptix.co.za for assistance.
 
 ### Getting Started
 
 - Install docker-machine (see [https://docs.docker.com/machine/](https://docs.docker.com/machine/#installation))
-  
+
 - Install docker-compose (see [https://docs.docker.com/compose/](https://docs.docker.com/compose/install/#install-compose))
 
 - Install Panoptix Mini Templates
@@ -35,15 +35,15 @@ It is under heavy development, please contact support@panoptix.co.za for assista
   export DIGITALOCEAN_REGION=ams3
   ./bin/do_machine.sh create myhotrodserver Hotrod
   ```
-  
+
   To view your machine run:
-  
+
   ```
   docker-machine ls
   ```
-  
+
   This will create a server with the default project named `Hotrod`. The project should be unique for each Hotrod instance.
-  
+
 - run `./hotrod init` and follow the prompts
 
 ### Do something custom
@@ -53,7 +53,7 @@ There is a special folder called `local`. Add you docker-compose files there to 
 ### Features
 
  - If you place 'once' in the name of the dc-*.yml file (Docker Compose) then it will only be executed once.
- 
+
 ### Components
 
 - Docker
