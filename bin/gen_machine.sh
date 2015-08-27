@@ -30,8 +30,9 @@ usage() {
     echo "Env Variables supported:"
     echo "  GEN_USERNAME"
     echo "  GEN_HOSTNAME"
-    echo "  GEN_SSHPUBKEY"    
+    echo "  GEN_SSHKEY"    
     echo "  GEN_OPTIONS"
+    echo "  MACHINEOPTS"
     echo ""
     exit 1
 }
@@ -58,8 +59,8 @@ create() {
     echo "Please set GEN_HOSTNAME (hostname or IP ) in environment"
     exit 1
   }  
-  [ -n "$GEN_SSHPUBKEY" ] || {
-    echo "Please set GEN_SSHPUBKEY (full path to pub ssh key) in environment"
+  [ -n "$GEN_SSHKEY" ] || {
+    echo "Please set GEN_SSHKEY (full path to private ssh key) in environment"
     exit 1
   }    
   if [[ "$2" != "" ]]; then 
@@ -73,12 +74,12 @@ create() {
   echo "HOTROD_PROJECT      = $HOTROD_PROJ"
 
   set -x
-  docker-machine create -d generic \
+  docker-machine ${MACHINEOPTS} create -d generic \
   --engine-label "za.co.panoptix.Hotrod=True" \
   --engine-label "za.co.panoptix.HotrodProj=$HOTROD_PROJ" \
   --engine-label "za.co.panoptix.manage.port=tcp://127.0.0.1:12345" \
   --generic-ssh-user ${GEN_USERNAME} \
-  --generic-ssh-key  ${GEN_SSHPUBKEY} \
+  --generic-ssh-key  ${GEN_SSHKEY} \
   --generic-ip-address ${GEN_HOSTNAME} \
   $1
   set +x
