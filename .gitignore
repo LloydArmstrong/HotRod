@@ -9,3 +9,4 @@ hotrodctl/keys
 hotrodctl/Dockerfile
 core-hotrod.yml
 docker-compose.yml
+docker-compose.yml.old
