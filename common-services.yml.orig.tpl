@@ -2,10 +2,10 @@ hotrod-core:
   environment:
     - HOTROD_SERVICE
 {%- if http_proxy %}
-    - HTTP_PROXY={{ http_proxy }}
+    - HTTP_PROXY='{{ http_proxy }}'
 {%- endif %}    
 {%- if https_proxy %}
-    - HTTPS_PROXY={{ https_proxy }}
+    - HTTPS_PROXY='{{ https_proxy }}'
 {%- endif %} 
 
 hotrod-service:
