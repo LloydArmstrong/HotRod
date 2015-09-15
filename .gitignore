@@ -7,6 +7,10 @@ default.yml.prev
 local/*
 hotrodctl/keys
 hotrodctl/Dockerfile
+hotrodctlkeys/Dockerfile
+hotrodctlkeys/ca.pem
+hotrodctlkeys/cert.pem
+hotrodctlkeys/key.pem
 core-hotrod.yml
 docker-compose.yml
 docker-compose.yml.old

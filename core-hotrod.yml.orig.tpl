@@ -25,6 +25,8 @@ wproxy:
     - WEAVE_CIDR=none
   command: --local launch-proxy --no-default-ipam -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
   
+hotrodctlkeys:
+  build: hotrodctlkeys
 
 hotrodctl:
   extends:
@@ -33,10 +35,10 @@ hotrodctl:
   build: hotrodctl
   net: host
   restart: always
-#   environment:
-#     - HOTROD_DEBUG=1 
   volumes:
     - /usr/local/bin:/usr/local/bin
+  volumes_from:
+    - hotrodctlkeys
   labels:
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
 

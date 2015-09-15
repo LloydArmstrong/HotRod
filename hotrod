@@ -403,8 +403,10 @@ dohotrodctl() {
   echo "Creating hotrodctl container..."
   eval $(docker-machine env $THIS_MACHINE) 
   mkdir -p $DIR/hotrodctl/keys
-  cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctl/keys/
-#   set -x
+  cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctlkeys/
+  
+  docker-compose -f core-hotrod.yml build hotrodctlkeys
+  docker-compose -f core-hotrod.yml up -d hotrodctlkeys
   
   docker-compose -f core-hotrod.yml build hotrodctl
   docker-compose -f core-hotrod.yml up -d hotrodctl

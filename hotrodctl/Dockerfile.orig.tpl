@@ -26,8 +26,6 @@ RUN curl --proxy-ntlm -sSL https://get.docker.com/ | sh
 
 #Install Docker Compose
 
-
-ADD keys /keys
 ADD hotrodctl /usr/bin/hotrodctl
 ENTRYPOINT ["/usr/bin/hotrodctl"]
 CMD ["supervise"]
