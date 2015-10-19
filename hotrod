@@ -5,7 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 STARTTIME=$(date +%s)
 cd $DIR
 
-declare -a TOOLS=("docker" "docker-machine" "docker-compose" "mini.py")
+declare -a TOOLS=("docker" "docker-machine" "docker-compose" "mini.py" "slappasswd")
 
 #Inspired by and bits copied from https://github.com/zettio/weave
 
@@ -206,7 +206,7 @@ find_project() {
   COMPOSE_FLAGS=$1
   if [[ "$HOTROD_PROJNAME" == "" ]]; then
     export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
-    echo "# Existing Project Found: $HOTROD_PROJNAME"
+    echo "# Project Found (default.yml): $HOTROD_PROJNAME"
   fi 
 }
 
@@ -214,7 +214,7 @@ compose_up() {
   COMPOSE_FLAGS=$1
   if [[ "$HOTROD_PROJNAME" == "" ]]; then
     export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
-    echo "Existing Project Found: $HOTROD_PROJNAME"
+    echo "Project Found (default.yml): $HOTROD_PROJNAME"
   fi 
   
   if [[ "$THIS_MACHINE" == "" ]]; then
@@ -340,10 +340,19 @@ find_machine() {
 doenv() {
   find_project
   find_machine
+  [[ "$THIS_MACHINE" == "" ]] && {
+    echo "# Docker-Machine host not found, using cached .hotrodenv file"
+    [ -f $DIR/.hotrodenv ] && {
+      cat $DIR/.hotrodenv    
+      echo "export DOCKER_CERT_PATH=\"$DIR/hotrodctlkeys\""
+    }
+    exit 0
+  }  
   echo "# This machine: $THIS_MACHINE"
   THIS_ENV=$(docker-machine env $THIS_MACHINE)
-  echo "$THIS_ENV" | sed -e 's/:2376/:12345/g' | sed -e "s/docker-machine env $THIS_MACHINE/\.\/hotrod env/g"
-  exit 1
+  echo "$THIS_ENV" | sed -e 's/:2376/:12345/g' | sed -E "s;PATH=.+;PATH=\"$DIR\/hotrodctlkeys\";g" | sed -e "s/docker-machine env $THIS_MACHINE/\.\/hotrod env/g"
+  echo "$THIS_ENV" | grep -v "^#" | grep -v "CERT_PATH=" > $DIR/.hotrodenv
+  exit 0
 }
 
 

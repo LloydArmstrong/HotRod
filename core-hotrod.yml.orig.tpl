@@ -27,6 +27,7 @@ wproxy:
   
 hotrodctlkeys:
   build: hotrodctlkeys
+  container_name: hotrodctlkeys
 
 hotrodctl:
   extends:

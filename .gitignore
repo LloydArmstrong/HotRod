@@ -1,3 +1,4 @@
+.hotrodenv
 env
 default.yml
 *.yml.run
