@@ -3,7 +3,7 @@
 DOCKER_MACHINE_PREFIX=${1:-"swarm"}
 HOTROD_PROJECT=${HOTROD_PROJECT:-"HotRod"}
 DIGITALOCEAN_REGIONS=${DIGITALOCEAN_REGIONS:-"ams3"}
-DIGITALOCEAN_SIZE=${DIGITALOCEAN_SIZE:-"4gb"}
+export DIGITALOCEAN_SIZE=${DIGITALOCEAN_SIZE:-"4gb"}
 HOTROD_CLUSTER_SIZE=${HOTROD_CLUSTER_SIZE:-"3"}
 DOCKER_MACHINE_DRIVER=${DOCKER_MACHINE_DRIVER:-"virtualbox"}
 [ -e "$WEAVE_PASSWORD" ] || {
@@ -67,7 +67,7 @@ swarm_flags="--swarm --swarm-discovery=token://$(${DOCKER_SWARM_CREATE})"
 for i in $(seq $HOTROD_CLUSTER_SIZE) ; do
   [[ "$DOCKER_MACHINE_DRIVER" == "digitalocean" ]] && {
     REGION_SELECTED=${REGIONS[$(n=${i} && echo $(( n %= $LEN )))]}
-    DIGITALOCEAN_REGION=$REGION_SELECTED
+    export DIGITALOCEAN_REGION=$REGION_SELECTED
     echo "Digital Ocean Region select: ${DIGITALOCEAN_REGION}"
   }
   SWARM_NODE_NAME="${DOCKER_MACHINE_PREFIX}-${i}"
@@ -102,6 +102,8 @@ for i in $(seq $HOTROD_CLUSTER_SIZE) ; do
 done
 
 wait
+unset DIGITALOCEAN_REGION
+
 echo "All $HOTROD_CLUSTER_SIZE complete"
 
 find_tls_args="cat /etc/default/docker | grep ^--tl | tr '\n' ' '"
