@@ -187,18 +187,6 @@ TEMPLATES=""
 RUNFILES=""
 
 recurse() {
-#  for i in "$1"/*;do
-#     if [ -f "$i" ]; then
-#         if [[ "$i" == *dc-* && "$i" == *.yml.run ]]; then
-#            RUNFILES="$RUNFILES $i"
-#         fi 
-#         if [[ "$i" == *dc-* && "$i" == *.yml ]]; then           
-#            TEMPLATES="$TEMPLATES $i"
-#         fi
-#     elif [ -d "$i" ];then
-#         recurse "$i"
-#     fi
-#  done
   TEMPLATES="docker-compose.yml"
 }
 
@@ -219,7 +207,7 @@ compose_up() {
   
   if [[ "$THIS_MACHINE" == "" ]]; then
     find_machine  
-    eval $(docker-machine env $THIS_MACHINE)
+    eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE)
     set +e
   fi 
   if [[ "$THIS_MACHINE" != "" ]]; then
@@ -319,7 +307,6 @@ doinit() {
 
 find_machine() {
   echo "# Trying to determine machine name..."
-#   set -x
   DOCKER_MACHINES=$(docker-machine ls --filter 'state=Running' -q)
   HOTROD_MACHINES=""
   
@@ -327,13 +314,19 @@ find_machine() {
      LABELS=$(docker-machine inspect $i --format="{{ range .HostOptions.EngineOptions.Labels }}{{ . }} {{ end }}" 2>&1 | tr ' ' "\n")
      if [[ "$LABELS" == *"Hotrod=True"* ]]; then
        for l in $LABELS; do
-#           echo $l
           if [[ "$l" == *"HotrodProj"* && "$l" == *"=$HOTROD_PROJNAME" ]]; then
-            THIS_MACHINE=$(trim $i)
+            SWARMMASTER=$(docker-machine inspect $i --format="{{ .HostOptions.SwarmOptions.Master }}" 2>&1 | tr ' ' "\n")
+            SWARM=$(docker-machine inspect $i --format="{{ .HostOptions.SwarmOptions.IsSwarm }}" 2>&1 | tr ' ' "\n")            
+            if [[ "$SWARM" == "false" || "$SWARMMASTER" == "true" ]]; then
+              THIS_MACHINE=$(trim $i)
+            fi
           fi
         done
      fi
   done
+  if [[ "$SWARM" == "true" ]]; then 
+     SWARM_OPTION="--swarm"
+  fi
   set +x
 }
 
@@ -349,10 +342,9 @@ doenv() {
     exit 0
   }  
   echo "# This machine: $THIS_MACHINE"
-  THIS_ENV=$(docker-machine env $THIS_MACHINE)
-  echo "$THIS_ENV" | sed -e 's/:2376/:12345/g' | sed -E "s;PATH=.+;PATH=\"$DIR\/hotrodctlkeys\";g" | sed -e "s/docker-machine env $THIS_MACHINE/\.\/hotrod env/g"
-  echo "$THIS_ENV" | grep -v "^#" | grep -v "CERT_PATH=" > $DIR/.hotrodenv
-  exit 0
+  THIS_ENV=$(docker-machine env ${SWARM_OPTION} $THIS_MACHINE)
+  echo "$THIS_ENV" | sed -E 's/:[0-9]{3,5}/:12345/g' | sed -e "s/docker-machine env ${SWARM_OPTION}  $THIS_MACHINE/\.\/hotrod env/g"
+  exit 1
 }
 
 
@@ -378,12 +370,12 @@ dobuild() {
     echo ""
     exit 1
   fi
-  eval $(docker-machine env $THIS_MACHINE)
+  eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE)
   set +e
   weave_proxy
   set -e
   dohotrodctl
-  eval $(docker-machine env $THIS_MACHINE)
+  eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE)
   DOCKER_HOST="$(echo $DOCKER_HOST  | sed 's/:2376/:12345/')"
   echo "DOCKER_HOST: $DOCKER_HOST"
   compose_up
@@ -410,7 +402,7 @@ dohotrodctl() {
     exit 1
   fi
   echo "Creating hotrodctl container..."
-  eval $(docker-machine env $THIS_MACHINE) 
+  eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE) 
   mkdir -p $DIR/hotrodctl/keys
   cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctlkeys/
   
