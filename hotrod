@@ -352,6 +352,7 @@ doenv() {
   THIS_ENV=$(docker-machine env $THIS_MACHINE)
   echo "$THIS_ENV" | sed -e 's/:2376/:12345/g' | sed -E "s;PATH=.+;PATH=\"$DIR\/hotrodctlkeys\";g" | sed -e "s/docker-machine env $THIS_MACHINE/\.\/hotrod env/g"
   echo "$THIS_ENV" | grep -v "^#" | grep -v "CERT_PATH=" > $DIR/.hotrodenv
+  echo "$THIS_MACHINE" > $DIR/.dockermachine
   exit 0
 }
 
