@@ -90,7 +90,7 @@ case "$COMMAND" in
         svcrestart $1
         ;;
     stop)
-        CANDIDATES=$(docker images | grep hotrodctl | awk '{ print $1; }')
+        CANDIDATES=$(docker images | grep hotrodctl | grep -v keys | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
           docker run --net=host $CANDIDATES svcstop
         }
