@@ -16,7 +16,7 @@ It is under heavy development, please contact support@panoptix.co.za for assista
 
   ```
   git clone https://github.com/panoptix-za/mini-templates.git
-  cp mini-templates/mini.py /usr/local/bin
+  sudo cp mini-templates/mini.py /usr/local/bin
   ```
 
 - Install HotRod
