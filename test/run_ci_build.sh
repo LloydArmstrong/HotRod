@@ -21,4 +21,7 @@ set -e
 echo "+++ create machine $BKHOTROD Hotrod"
 ./bin/do_machine.sh create $BKHOTROD Hotrod
 
+echo "+++ seed empty default.yml"
+echo "variables:\n   foo: 'foo'" > default.yml
+
 
