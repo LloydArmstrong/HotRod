@@ -1,4 +1,5 @@
 .hotrodenv
+bin/install_apps.sh
 env
 default.yml
 *.yml.run

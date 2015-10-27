@@ -365,10 +365,16 @@ dobuild() {
   if [[ "$THIS_MACHINE" != "" ]]; then
     echo "Using: $THIS_MACHINE (for project: $HOTROD_PROJNAME)"  
   else
-    echo "No machine found for project: $HOTROD_PROJNAME"
-    echo "Perhaps run a helper script in bin/"
-    echo ""
-    exit 1
+    if [ -f $DIR/.hotrodenv ]; then
+      eval $(cat $DIR/.hotrodenv)
+      echo "Using $DIR/.hotrodenv"
+      THIS_MACHINE=$(cat $DIR/.dockermachine)
+    else
+      echo "No machine found for project: $HOTROD_PROJNAME"
+      echo "Perhaps run a helper script in bin/"
+      echo ""
+      exit 1
+    fi    
   fi
   eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE)
   set +e
@@ -404,7 +410,9 @@ dohotrodctl() {
   echo "Creating hotrodctl container..."
   eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE) 
   mkdir -p $DIR/hotrodctl/keys
-  cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctlkeys/
+  [ -f $DIR/hotrodctlkeys/cert.pem ] || {
+    cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctlkeys/
+  }
   
   docker-compose -f core-hotrod.yml build hotrodctlkeys
   docker-compose -f core-hotrod.yml up -d hotrodctlkeys

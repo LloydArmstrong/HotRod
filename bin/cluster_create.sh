@@ -41,11 +41,13 @@ echo "DOCKER_MACHINE_DRIVER      = $DOCKER_MACHINE_DRIVER"
    exit 1
 }
 echo "DOCKER_MACHINE_PREFIX      = $DOCKER_MACHINE_PREFIX"
-echo "DIGITALOCEAN_REGIONS       = $DIGITALOCEAN_REGIONS ($LEN)"
-echo "DIGITALOCEAN_SIZE          = $DIGITALOCEAN_SIZE"
 echo "HOTROD_PROJECT             = $HOTROD_PROJECT"
 echo "HOTROD_CLUSTER_SIZE        = $HOTROD_CLUSTER_SIZE"
 echo "WEAVE_PASSWORD (save this) = $WEAVE_PASSWORD"
+[[ "$DOCKER_MACHINE_DRIVER" == "digitalocean" ]] && {
+  echo "DIGITALOCEAN_REGIONS       = $DIGITALOCEAN_REGIONS ($LEN)"
+  echo "DIGITALOCEAN_SIZE          = $DIGITALOCEAN_SIZE"
+}
 echo ""
 for i in $(seq $HOTROD_CLUSTER_SIZE) ; do
   VARNAME="SWARM_${i}_OPTIONS"
@@ -78,6 +80,7 @@ for i in $(seq $HOTROD_CLUSTER_SIZE) ; do
     eval MACHINE_OPTIONS=\$$VARNAME
   }
   set +e
+  set -x
   if [ ${i} = 1 ]; then
     ## The first machine shall be the Swarm master
     docker-machine create \
@@ -99,6 +102,7 @@ for i in $(seq $HOTROD_CLUSTER_SIZE) ; do
       $SWARM_NODE_NAME &
   fi
   set -e
+  set +x  
 done
 
 wait
