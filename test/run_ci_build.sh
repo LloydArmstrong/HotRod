@@ -22,6 +22,16 @@ echo "+++ create machine $BKHOTROD Hotrod"
 ./bin/do_machine.sh create $BKHOTROD Hotrod
 
 echo "+++ seed empty default.yml"
-echo "variables:\n   foo: 'foo'" > default.yml
+cat > default.yml << EOF
+variables:
+  hotrod_project_name: EasyELK
+EOF
 
+echo "+++ seed empty default.yml"
+cat > local/project.yml << EOF
+variables:
+  apps:
+    - repo: git@github.com:panoptix-za/hotrod-easyelk.git
+      dest: easyELK
+EOF
 
