@@ -27,19 +27,13 @@ declare -a RUNLEVELS=("core" "0" "1" "2")
   set -x
 }
 
-supervise() 
-  SWARM_ID=$(docker ps --filter name=swarm-agent-master -q)
-  if [ -n "$SWARM_ID" ]; then
-    DOCKER_HOST="tcp://127.0.0.1:3376"
-  else
-    DOCKER_HOST="tcp://127.0.0.1:2376"  
-  fi
-  CANDIDATES=$(docker -H=$DOCKER_HOST --tls=True ps -a --filter name=weaveproxy --filter status=exited -q)
+supervise() {
+  CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 --tls=True ps -a --filter name=weaveproxy --filter status=exited -q)
   [ -n "$CANDIDATES" ] && {
     echo "Start weave..."
-    CANDIDATES=$(docker -H=$DOCKER_HOST --tls=True ps -a --filter name=wproxy --filter status=exited -q)
+    CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 --tls=True ps -a --filter name=wproxy --filter status=exited -q)
     [ -n "$CANDIDATES" ] && {
-      docker -H=$DOCKER_HOST --tls=True start $CANDIDATES
+      docker -H=tcp://127.0.0.1:2376 --tls=True start $CANDIDATES
     }
   }
   
@@ -96,7 +90,7 @@ case "$COMMAND" in
         svcrestart $1
         ;;
     stop)
-        CANDIDATES=$(docker images | grep hotrodctl | grep -v keys | awk '{ print $1; }')
+        CANDIDATES=$(docker images | grep hotrodctl | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
           docker run --net=host $CANDIDATES svcstop
         }
