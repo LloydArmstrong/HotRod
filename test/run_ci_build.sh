@@ -36,7 +36,7 @@ echo "+++ seed empty project.yml"
 cat > local/project.yml << EOF
 variables:
   apps:
-    - repo: git@github.com:panoptix-za/hotrod-easyelk.git
+    - repo: https://github.com/panoptix-za/hotrod-easyelk.git
       dest: easyELK
 EOF
 
