@@ -8,6 +8,11 @@ BKHOTROD=$PROJNAME-bkhotrod-$BUILDKITE_BUILD_NUMBER
 export HOTROD_PROJNAME=Hotrod
 export HOTROD_HOSTNAME=$(docker-machine ip $BKHOTROD)
 export NOPROMPT=Yes
+export ADMIN_PASSWD=$(vault read -field=admin secret/CD/cloud/TestCredentials)
+export DEFAULT_USER_PASSWD=$(vault read -field=default secret/CD/cloud/TestCredentials)
+export DOCKER_HUB_USERNAME=$(vault read -field=username secret/CD/cloud/DockerCI)
+export DOCKER_HUB_PASSWORD=$(vault read -field=password secret/CD/cloud/DockerCI)
+export DOCKER_HUB_EMAIL=$(vault read -field=email secret/CD/cloud/DockerCI)
 
 eval $(docker-machine env $BKHOTROD)
 

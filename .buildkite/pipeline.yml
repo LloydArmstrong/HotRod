@@ -1,0 +1,31 @@
+# .buildkite/pipeline.yml
+
+env:
+  THIS_WILL_APPLY_TO_ALL: true
+
+steps:
+  - name: ":Build:"
+    command: "./test/run_ci_build.sh"
+    concurrency: 1
+    concurrency_group: dockerbuild
+
+  - waiter
+
+  - name: ":mini:"
+    command: "mini.py"
+    
+  - waiter
+  
+  - name: ":installapps"
+    command: "bash ./bin/install_apps.sh"
+
+  - waiter
+
+  - name: ":hotrod init:"
+    command: "./test/run_ci_init.sh"
+
+  - waiter
+  
+  - name: ":destroy:"
+    command: "./test/destroy_ci_build.sh"
+    
