@@ -3,8 +3,8 @@
 PROJNAME=$(echo $BUILDKITE_PROJECT_SLUG | cut -f2 -d'/')
 BKHOTROD=$PROJNAME-bkhotrod-$BUILDKITE_BUILD_NUMBER
 
-DIGITALOCEAN_ACCESS_TOKEN=(vault read -field=token secret/CD/cloud/DigitalOceanCI)
-DIGITALOCEAN_REGION=fra1
+export DIGITALOCEAN_ACCESS_TOKEN=(vault read -field=token secret/CD/cloud/DigitalOceanCI)
+export DIGITALOCEAN_REGION=fra1
 
 echo "--- check if $BKHOTROD machine exists"
 
