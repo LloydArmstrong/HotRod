@@ -2,7 +2,7 @@ wproxy:
   extends:
     file: common-services.yml
     service: hotrod-core
-  image: weaveworks/weaveexec:1.1.1
+  image: weaveworks/weaveexec:1.0.2
   labels:
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
   net: host
@@ -11,7 +11,6 @@ wproxy:
     - /var/run/docker.sock:/var/run/docker.sock
     - /proc:/hostproc
   environment:
-    - constraint:master==true  
     - PROCFS=/hostproc
     - DOCKERHUB_USER=weaveworks
     - VERSION
@@ -24,7 +23,7 @@ wproxy:
     - DOCKER_BRIDGE
     - PROXY_HOST=127.0.0.1
     - WEAVE_CIDR=none
-  command: --help --local launch-proxy --no-default-ipalloc -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
+  command: --local launch-proxy --no-default-ipam -H tcp://0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
   
 hotrodctlkeys:
   build: hotrodctlkeys
@@ -47,6 +46,4 @@ hotrodctl:
     - hotrodctlkeys
   labels:
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
-
-
 
