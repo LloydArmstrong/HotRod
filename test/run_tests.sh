@@ -4,6 +4,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 STARTTIME=$(date +%s)
 set -e
 
+[ -n "$BKHOTROD" ]  || {
+  export BKHOTROD=$PROJNAME-bkhotrod-$BUILDKITE_BUILD_NUMBER
+}
+
 echo "+++ Run the goss tests"
 
 cd $DIR/../local/tests
