@@ -38,7 +38,7 @@ variables:
   apps:
     - repo: https://github.com/panoptix-za/hotrod-easyelk.git
       dest: easyELK
-    - repo: git@github.com:panoptix-za/goss-tests-oss.git
+    - repo: https://github.com/panoptix-za/goss-tests-oss.git
       dest: tests
 EOF
 
