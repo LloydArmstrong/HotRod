@@ -15,8 +15,11 @@ fi
   echo "A docker-machine must be defined..."
   exit 1
 }
-echo "+++ Run the goss tests"
 
+echo "+++ Install Goss if needed"
+docker-machine ssh $BKHOTROD 'test -f /usr/local/bin/goss || curl -L https://github.com/aelsabbahy/goss/releases/download/v0.0.15/goss-linux-amd64 > /usr/local/bin/goss && chmod +x /usr/local/bin/goss'
+
+echo "+++ Run the goss tests"
 cd $DIR/../local/tests
 TESTS=$(find . | grep '/goss_hotrod/' | grep -e '\.json$')
 for t in $TESTS; do
