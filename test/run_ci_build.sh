@@ -38,5 +38,14 @@ variables:
   apps:
     - repo: https://github.com/panoptix-za/hotrod-easyelk.git
       dest: easyELK
+    - repo: git@github.com:panoptix-za/goss-tests-oss.git
+      dest: tests
 EOF
+
+echo "+++ Install Goss if needed"
+docker-machine ssh $BKHOTROD 'test -f /usr/local/bin/goss'
+[ $? -eq 1 ] || { 
+  echo "Installing Goss"
+  docker-machine ssh $BKHOTROD 'curl -L https://github.com/aelsabbahy/goss/releases/download/v0.0.15/goss-linux-amd64 > /usr/local/bin/goss && chmod +x /usr/local/bin/goss'
+}
 
