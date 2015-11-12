@@ -7,10 +7,15 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 STARTTIME=$(date +%s)
 cd $DIR/../local
 
-
-
 {% for app in apps -%}
-git clone {{ app.repo }} {{ app.dest }}
+if [ ! -d $DIR/../local/{{ app.dest }} ]; then
+  echo "Cloning {{ app.repo }}"
+  git clone {{ app.repo }} {{ app.dest }}
+else 
+  echo "Updating {{ app.repo }}"
+  cd $DIR/../local/{{ app.dest }}
+  git pull 
+fi
 {% endfor %}
 
 
