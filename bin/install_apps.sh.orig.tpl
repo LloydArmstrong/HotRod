@@ -10,6 +10,7 @@ cd $DIR/../local
 {% for app in apps -%}
 if [ ! -d $DIR/../local/{{ app.dest }} ]; then
   echo "Cloning {{ app.repo }}"
+  cd $DIR/../local
   git clone {{ app.repo }} {{ app.dest }}
 else 
   echo "Updating {{ app.repo }}"
