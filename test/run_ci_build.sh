@@ -54,6 +54,7 @@ VAULT_PATH="$VAULT_PREFIX/$HOTROD_PROJECT"
 
 for file in "${FILES[@]}"
 do
+  echo "+++ seed $file"
   FILECONTENTS=$(vault read -field=payload $VAULT_PATH/file/$file) 
   TARGET=$file
   mkdir -p $(dirname $TARGET)
