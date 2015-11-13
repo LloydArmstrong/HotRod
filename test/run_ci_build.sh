@@ -18,6 +18,11 @@ set -e
   sleep 30
 }
 
+[ -n "$HOTROD_PROJECT" ] || {
+  echo "You must define HOTROD_PROJECT"
+  exit 1
+}
+
 echo "+++ create machine $BKHOTROD Hotrod"
 ./bin/do_machine.sh create $BKHOTROD Hotrod
 
@@ -31,12 +36,6 @@ collect:
     dst: docker-compose.yml
 
 EOF
-
-[ -n "$HOTROD_PROJECT" ] || {
-  echo "You must define HOTROD_PROJECT"
-  exit 1
-}
-
 
 # Determine platform
 case "$(uname)" in
