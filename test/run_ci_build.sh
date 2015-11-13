@@ -21,7 +21,7 @@ set -e
 echo "+++ create machine $BKHOTROD Hotrod"
 ./bin/do_machine.sh create $BKHOTROD Hotrod
 
-echo "+++ seed empty default.yml"
+echo "+++ seed fake/empty default.yml"
 cat > default.yml << EOF
 variables:
   hotrod_project_name: EasyELK
@@ -32,13 +32,31 @@ collect:
 
 EOF
 
-echo "+++ seed empty project.yml"
-cat > local/project.yml << EOF
-variables:
-  apps:
-    - repo: https://github.com/panoptix-za/hotrod-easyelk.git
-      dest: easyELK
-    - repo: https://github.com/panoptix-za/goss-tests-oss.git
-      dest: tests
-EOF
+[ -n "$HOTROD_PROJECT" ] || {
+  echo "You must define HOTROD_PROJECT"
+  exit 1
+}
 
+
+# Determine platform
+case "$(uname)" in
+    Darwin)
+        BASE64CMD='base64 -D '
+        ;;
+     Linux)
+        BASE64CMD='base64 -d '
+        ;;
+esac 
+
+declare -a FILES=("local/project.yml")
+
+VAULT_PREFIX="secret/CD/var/projects"
+VAULT_PATH="$VAULT_PREFIX/$HOTROD_PROJECT"
+
+for file in "${FILES[@]}"
+do
+  FILECONTENTS=$(vault read -field=payload $VAULT_PATH/file/$file) 
+  TARGET=$file
+  mkdir -p $(dirname $TARGET)
+  echo $FILECONTENTS | $BASE64CMD > $TARGET
+done
