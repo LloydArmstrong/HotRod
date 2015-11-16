@@ -15,6 +15,8 @@ usage() {
     exit 1
 }
 
+TLSOPTS="--tlsverify=false --tls=true --tlscacert /keys/ca.pem --tlscert /keys/cert.pem --tlskey /keys/key.pem"
+
 COMMAND=$1
 
 [ $# -gt 0 ] || usage
@@ -28,22 +30,22 @@ declare -a RUNLEVELS=("core" "0" "1" "2")
 }
 
 supervise() {
-  CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 --tls=True ps -a --filter name=weaveproxy --filter status=exited -q)
+  CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 $TLSOPTS ps -a --format '{{.Names}}' --filter name=weaveproxy --filter status=exited -q)
   [ -n "$CANDIDATES" ] && {
     echo "Start weave..."
-    CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 --tls=True ps -a --filter name=wproxy --filter status=exited -q)
+    CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 $TLSOPTS ps -a --format '{{.Names}}' --filter name=wproxy --filter status=exited -q)
     [ -n "$CANDIDATES" ] && {
-      docker -H=tcp://127.0.0.1:2376 --tls=True start $CANDIDATES
+      docker -H=tcp://127.0.0.1:2376 $TLSOPTS start $CANDIDATES
     }
   }
   
   while true; do
     
     for runlevel in ${RUNLEVELS[@]}; do
-      CANDIDATES=$(docker --tls=True ps -a -q --filter status=exited --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter label=za.co.panoptix.hotrod.startorder=$runlevel)
+      CANDIDATES=$(docker -H=tcp://127.0.0.1:12345 $TLSOPTS ps -a -q --format '{{.Names}}' --filter status=exited --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter label=za.co.panoptix.hotrod.startorder=$runlevel)
       [ -n "$CANDIDATES" ] &&  {
         echo "Start hotrod containers runlevel $runlevel..."
-        docker --tls=True start $CANDIDATES 
+        docker -H=tcp://127.0.0.1:12345 $TLSOPTS start $CANDIDATES 
       }
     done
     sleep 30
@@ -52,24 +54,24 @@ supervise() {
 }
 
 stopall() {
-  CANDIDATES=$(docker --tls=True ps -q --filter status=running --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=_hotrodctl_)
+  CANDIDATES=$(docker ps -q --filter status=running --format '{{.Names}}' --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=_hotrodctl_)
   [ -n "$CANDIDATES" ] &&  {
     echo 'Stop hotrodctl...'
-    docker --tls=True stop $CANDIDATES 
+    docker stop $CANDIDATES 
   }
-  CANDIDATES=$(docker --tls=True ps -q --filter status=running --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME)
+  CANDIDATES=$(docker ps -q --filter status=running --format '{{.Names}}' --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME)
   [ -n "$CANDIDATES" ] &&  {
     echo 'Stop hotrod containers...'
-    docker --tls=True stop --time=45 $CANDIDATES 
+    docker stop --time=45 $CANDIDATES 
   }
 }
 
 svcrestart() {
   CONTAINER=$1
-  CANDIDATES=$(docker --tls=True ps -q --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=$CONTAINER)
+  CANDIDATES=$(docker ps -q --format '{{.Names}}' --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=$CONTAINER)
   [ -n "$CANDIDATES" ] &&  {
     echo 'Restart container...'
-    docker --tls=True restart $CANDIDATES 
+    docker restart $CANDIDATES 
   }
 }
 
@@ -92,21 +94,21 @@ case "$COMMAND" in
     stop)
         CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
-          docker run --net=host $CANDIDATES svcstop
+          docker run -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock $CANDIDATES svcstop
         }
         ;;
     start)
-        docker start $(docker ps -a -q --filter label=za.co.panoptix.hotrod.projectname --filter name=_hotrodctl_)
+        docker start $(docker ps -a -q --format '{{.Names}}' --filter label=za.co.panoptix.hotrod.projectname --filter name=_hotrodctl_)
         ;;   
     restart)
-        CANDIDATES=$(docker images | grep hotrodctl | awk '{ print $1; }')
+        CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
-          docker run --net=host $CANDIDATES svcrestart $1
+          docker run -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock --volumes-from=hotrodctlkeys $CANDIDATES svcrestart $1
         }
         ;;
     enter)
         CONTAINER=$1
-        CANDIDATES=$(docker ps -q  --filter status=running --filter label=za.co.panoptix.hotrod.projectname --filter name=$CONTAINER)
+        CANDIDATES=$(docker ps --format '{{.Names}}' --filter status=running --filter label=za.co.panoptix.hotrod.projectname --filter name=$CONTAINER)
         [ -n "$CANDIDATES" ] &&  {
           docker exec -it $(echo $CANDIDATES | cut -f1 -d' ') bash
         }

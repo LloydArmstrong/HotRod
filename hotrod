@@ -413,9 +413,11 @@ dohotrodctl() {
   echo "Creating hotrodctl container..."
   eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE) 
   mkdir -p $DIR/hotrodctl/keys
-  [ -f $DIR/hotrodctlkeys/cert.pem ] || {
-    cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctlkeys/
-  }
+
+  echo "Copying docker machine keys..."
+  set +e
+  cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctlkeys/
+  set -e
   
   docker-compose -f core-hotrod.yml build hotrodctlkeys
   docker-compose -f core-hotrod.yml up -d hotrodctlkeys
