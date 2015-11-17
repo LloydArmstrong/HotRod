@@ -94,7 +94,7 @@ case "$COMMAND" in
     stop)
         CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
-          docker run -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock $CANDIDATES svcstop
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock $CANDIDATES svcstop
         }
         ;;
     start)
@@ -103,7 +103,7 @@ case "$COMMAND" in
     restart)
         CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
-          docker run -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock --volumes-from=hotrodctlkeys $CANDIDATES svcrestart $1
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock --volumes-from=hotrodctlkeys $CANDIDATES svcrestart $1
         }
         ;;
     enter)
