@@ -24,7 +24,7 @@ set -e
 }
 
 echo "+++ create machine $BKHOTROD Hotrod"
-./bin/do_machine.sh create $BKHOTROD Hotrod
+./bin/do_machine.sh create $BKHOTROD Hotrod-$PROJNAME
 
 echo "+++ seed fake/empty default.yml"
 cat > default.yml << EOF
