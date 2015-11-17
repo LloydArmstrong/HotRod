@@ -22,14 +22,14 @@ docker-machine ssh $BKHOTROD 'test -f /usr/local/bin/goss || curl -L https://git
 echo "+++ Run the goss tests"
 cd $DIR/../local/tests
 TESTS=$(find . | grep '/goss_hotrod/' | grep -e '\.json$')
-for t in $TESTS; do
+for t in $(echo "$TESTS" | sort -V); do
   echo 
   echo "+++ Running test: $t"
   cat $t | docker-machine ssh $BKHOTROD 'goss validate'
 done
 
 TESTS=$(find . | grep -v '/goss_hotrod/' | grep -e '\.json$')
-for t in $TESTS; do
+for t in $(echo "$TESTS" | sort -V); do
   echo 
   echo "+++ Running test: $t"
   cat $t | docker-machine ssh $BKHOTROD 'goss validate'
