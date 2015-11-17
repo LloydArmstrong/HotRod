@@ -108,9 +108,14 @@ case "$COMMAND" in
         ;;
     enter)
         CONTAINER=$1
+        COMMAND=$2
+        [ -n "$COMMAND" ] || {
+           export INTERACTIVE="-it"
+           export COMMAND="bash"
+        }
         CANDIDATES=$(docker ps --format '{{.Names}}' --filter status=running --filter label=za.co.panoptix.hotrod.projectname --filter name=$CONTAINER)
         [ -n "$CANDIDATES" ] &&  {
-          docker exec -it $(echo $CANDIDATES | cut -f1 -d' ') bash
+          docker exec $INTERACTIVE $(echo $CANDIDATES | cut -f1 -d' ') "$COMMAND"
         }
         ;;     
     *)
