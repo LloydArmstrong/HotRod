@@ -57,7 +57,8 @@ stopall() {
   CANDIDATES=$(docker ps -q --filter status=running --format '{{.Names}}' --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter name=_hotrodctl_)
   [ -n "$CANDIDATES" ] &&  {
     echo 'Stop hotrodctl...'
-    docker stop $CANDIDATES 
+    timeout 10 docker stop --time=5 $CANDIDATES 
+    docker stop --time=5 $CANDIDATES
   }
   CANDIDATES=$(docker ps -q --filter status=running --format '{{.Names}}' --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME)
   [ -n "$CANDIDATES" ] &&  {
@@ -92,16 +93,17 @@ case "$COMMAND" in
         svcrestart $1
         ;;
     stop)
-        CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | awk '{ print $1; }')
+        CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | head -1 | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock $CANDIDATES svcstop
         }
         ;;
     start)
+        echo 'Start hotrodctl...'
         docker start $(docker ps -a -q --format '{{.Names}}' --filter label=za.co.panoptix.hotrod.projectname --filter name=_hotrodctl_)
         ;;   
     restart)
-        CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | awk '{ print $1; }')
+        CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | head -1 | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock --volumes-from=hotrodctlkeys $CANDIDATES svcrestart $1
         }

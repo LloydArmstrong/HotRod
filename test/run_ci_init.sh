@@ -5,7 +5,7 @@ set -eo pipefail
 PROJNAME=$(echo $BUILDKITE_PROJECT_SLUG | cut -f2 -d'/')
 BKHOTROD=$PROJNAME-bkhotrod-$BUILDKITE_BUILD_NUMBER
 
-export HOTROD_PROJNAME=Hotrod
+export HOTROD_PROJNAME=Hotrod-$PROJNAME
 export HOTROD_HOSTNAME=$(docker-machine ip $BKHOTROD)
 export NOPROMPT=Yes
 export ADMIN_PASSWD=$(vault read -field=admin secret/CD/cloud/TestCredentials)
