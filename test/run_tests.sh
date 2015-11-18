@@ -16,21 +16,31 @@ fi
   exit 1
 }
 
+# Determine platform
+case "$(uname)" in
+    Darwin)
+        SORTOPT=''
+        ;;
+     Linux)
+        SORTOPT='-V'
+        ;;
+esac 
+
 echo "+++ Install Goss if needed"
-docker-machine ssh $BKHOTROD 'test -f /usr/local/bin/goss || curl -L https://github.com/aelsabbahy/goss/releases/download/v0.0.15/goss-linux-amd64 > /usr/local/bin/goss && chmod +x /usr/local/bin/goss'
+docker-machine ssh $BKHOTROD 'test -f /usr/local/bin/goss || { curl -L https://github.com/aelsabbahy/goss/releases/download/v0.0.15/goss-linux-amd64 > /tmp/goss && sudo mv /tmp/goss /usr/local/bin/goss && sudo chmod +x /usr/local/bin/goss; }'
 
 echo "+++ Run the goss tests"
 cd $DIR/../local/tests
 TESTS=$(find . | grep '/goss_hotrod/' | grep -e '\.json$')
-for t in $(echo "$TESTS" | sort -V); do
+for t in $(echo "$TESTS" | sort $SORTOPT); do
   echo 
   echo "+++ Running test: $t"
-  cat $t | docker-machine ssh $BKHOTROD 'goss validate'
+  cat $t | docker-machine ssh $BKHOTROD 'sudo goss validate --format documentation'
 done
 
 TESTS=$(find . | grep -v '/goss_hotrod/' | grep -e '\.json$')
-for t in $(echo "$TESTS" | sort -V); do
+for t in $(echo "$TESTS" | sort $SORTOPT); do
   echo 
   echo "+++ Running test: $t"
-  cat $t | docker-machine ssh $BKHOTROD 'goss validate'
+  cat $t | docker-machine ssh $BKHOTROD 'sudo goss validate --format documentation'
 done
