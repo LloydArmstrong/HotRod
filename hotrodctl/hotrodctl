@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -ex
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 STARTTIME=$(date +%s)
@@ -30,12 +30,12 @@ declare -a RUNLEVELS=("core" "0" "1" "2")
 }
 
 supervise() {
-  CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 $TLSOPTS ps -a --format '{{.Names}}' --filter name=weaveproxy --filter status=exited -q)
+  CANDIDATES=$(docker ps -a --format '{{.Names}}' --filter name=weaveproxy --filter status=exited -q)
   [ -n "$CANDIDATES" ] && {
     echo "Start weave..."
-    CANDIDATES=$(docker -H=tcp://127.0.0.1:2376 $TLSOPTS ps -a --format '{{.Names}}' --filter name=wproxy --filter status=exited -q)
+    CANDIDATES=$(docker ps -a --format '{{.Names}}' --filter name=wproxy --filter status=exited -q)
     [ -n "$CANDIDATES" ] && {
-      docker -H=tcp://127.0.0.1:2376 $TLSOPTS start $CANDIDATES
+      docker start $CANDIDATES
     }
   }
   

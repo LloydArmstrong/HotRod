@@ -42,6 +42,7 @@ hotrodctl:
   restart: always
   volumes:
     - /usr/local/bin:/usr/local/bin
+    - /var/run/docker.sock:/var/run/docker.sock
   volumes_from:
     - hotrodctlkeys
   labels:
