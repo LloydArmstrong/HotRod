@@ -15,6 +15,9 @@ steps:
     command: "mini.py"
     
   - waiter
+
+  - name: "Remove stale apps"
+    command: "rm -rf ./local/*"
   
   - name: "Install HotRod Apps"
     command: "bash ./bin/install_apps.sh"
