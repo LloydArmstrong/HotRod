@@ -18,6 +18,8 @@ steps:
 
   - name: "Remove stale apps"
     command: "rm -rf ./local/*"
+
+  - waiter
   
   - name: "Install HotRod Apps"
     command: "bash ./bin/install_apps.sh"
