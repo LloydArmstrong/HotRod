@@ -21,11 +21,11 @@ RUN apt-get -y install slapd
 RUN curl -sSL https://get.docker.com/ | sudo sh
 
 #install Docker Compose
-RUN curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
+RUN curl -L https://github.com/docker/compose/releases/download/1.5.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
 #install Docker Machine
-RUN curl -L https://github.com/docker/machine/releases/download/v0.4.1/docker-machine_linux-amd64 > /usr/local/bin/docker-machine && \
+RUN curl -L https://github.com/docker/machine/releases/download/v0.5.2/docker-machine_linux-amd64 > /usr/local/bin/docker-machine && \
     chmod +x /usr/local/bin/docker-machine
     
 ADD . /hotrod
