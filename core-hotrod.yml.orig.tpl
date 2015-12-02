@@ -2,7 +2,7 @@ wproxy:
   extends:
     file: common-services.yml
     service: hotrod-core
-  image: weaveworks/weaveexec:1.0.2
+  image: weaveworks/weaveexec:1.0.3
   labels:
     za.co.panoptix.hotrod.projectname: "{{ hotrod_project_name }}"
   net: host
@@ -42,7 +42,6 @@ hotrodctl:
   restart: always
   volumes:
     - /usr/local/bin:/usr/local/bin
-    - /var/run/docker.sock:/var/run/docker.sock
   volumes_from:
     - hotrodctlkeys
   labels:
