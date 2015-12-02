@@ -18,7 +18,7 @@ RUN apt-get update && \
 RUN apt-get -y install slapd
 
 #install Docker
-RUN curl -sSL https://get.docker.com/ubuntu/ | sudo sh
+RUN curl -sSL https://get.docker.com/ | sudo sh
 
 #install Docker Compose
 RUN curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \

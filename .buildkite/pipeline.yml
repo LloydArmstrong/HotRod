@@ -34,8 +34,6 @@ steps:
   - name: "Run Tests"
     command: "./test/run_tests.sh"
 
-  - waiter
-  
   - name: "Destroy Docker Machine"
     command: "./test/destroy_ci_build.sh"
     
