@@ -11,6 +11,11 @@ steps:
 
   - waiter
 
+  - name: "HotRod Init"
+    command: "./test/run_ci_seed.sh"
+
+  - waiter
+
   - name: "Run Template Engine"
     command: "mini.py"
     
