@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 STARTTIME=$(date +%s)
@@ -11,11 +11,8 @@ usage() {
     echo "hotrodctl stop"
     echo "hotrodctl restart SERVICENAME"
     echo "hotrodctl enter SERVICENAME"
-#     echo "hotrodctl supervise"
     exit 1
 }
-
-TLSOPTS="--tlsverify=false --tls=true --tlscacert /keys/ca.pem --tlscert /keys/cert.pem --tlskey /keys/key.pem"
 
 COMMAND=$1
 
@@ -32,9 +29,9 @@ declare -a RUNLEVELS=("core" "0" "1" "2")
 supervise() {
   CANDIDATES=$(docker ps -a --format '{{.Names}}' --filter name=weaveproxy --filter status=exited -q)
   [ -n "$CANDIDATES" ] && {
-    echo "Start weave..."
     CANDIDATES=$(docker ps -a --format '{{.Names}}' --filter name=wproxy --filter status=exited -q)
     [ -n "$CANDIDATES" ] && {
+      echo "Start weave..."
       docker start $CANDIDATES
     }
   }
@@ -42,10 +39,10 @@ supervise() {
   while true; do
     
     for runlevel in ${RUNLEVELS[@]}; do
-      CANDIDATES=$(docker -H=tcp://127.0.0.1:12345 $TLSOPTS ps -a -q --format '{{.Names}}' --filter status=exited --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter label=za.co.panoptix.hotrod.startorder=$runlevel)
+      CANDIDATES=$(docker -H=unix:///var/run/weave/weave.sock ps -a -q --format '{{.Names}}' --filter status=exited --filter label=za.co.panoptix.hotrod.projectname=$HOTROD_PROJNAME --filter label=za.co.panoptix.hotrod.startorder=$runlevel)
       [ -n "$CANDIDATES" ] &&  {
         echo "Start hotrod containers runlevel $runlevel..."
-        docker -H=tcp://127.0.0.1:12345 $TLSOPTS start $CANDIDATES 
+        docker -H=unix:///var/run/weave/weave.sock start $CANDIDATES 
       }
     done
     sleep 30
@@ -105,7 +102,7 @@ case "$COMMAND" in
     restart)
         CANDIDATES=$(docker images | grep hotrodctl | grep -v hotrodctlkeys | head -1 | awk '{ print $1; }')
         [ -n "$CANDIDATES" ] && {
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw -e DOCKER_HOST=unix:///var/run/docker.sock --volumes-from=hotrodctlkeys $CANDIDATES svcrestart $1
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw -v /var/run/weave/weave.sock:/var/run/weave/weave.sock:rw -e DOCKER_HOST=unix:///var/run/weave/weave.sock $CANDIDATES svcrestart $1
         }
         ;;
     enter)

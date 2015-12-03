@@ -352,7 +352,32 @@ doenv() {
 
 
 weave_proxy() {
-  docker-compose -f core-hotrod.yml up -d wproxy
+  echo "Launch weave"
+  if [[ "$HOTROD_PROJNAME" == "" ]]; then
+    export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
+    echo "Existing Project Found: $HOTROD_PROJNAME"
+  fi 
+  if [[ "$DOCKERMACHINE" == "" ]]; then
+    if [[ "$THIS_MACHINE" == "" ]]; then
+      find_machine  
+    fi
+  else
+    THIS_MACHINE=$DOCKERMACHINE  
+  fi 
+  if [[ "$THIS_MACHINE" != "" ]]; then
+    echo "Using: $THIS_MACHINE (for project: $HOTROD_PROJNAME)"  
+  else
+    echo "No machine found for project: $HOTROD_PROJNAME"
+    echo "Perhaps run a helper script in bin/"
+    echo ""
+    exit 1
+  fi
+  eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE)    
+  WEAVE_PASSWORD=$(echo $(cat ./default.yml | grep weave_shared_secret | cut -d":" -f2))
+  set +o history
+  $DIR/bin/weave launch-router --ipalloc-range 169.254.0.0/16 --password $WEAVE_PASSWORD
+  set -o history  
+  $DIR/bin/weave launch-proxy --no-default-ipalloc --no-rewrite-hosts --without-dns -H /var/run/weave/weave.sock -H 0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
 }
 
 dobuild() {
@@ -362,8 +387,12 @@ dobuild() {
     export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
     echo "Existing Project Found: $HOTROD_PROJNAME"
   fi 
-  if [[ "$THIS_MACHINE" == "" ]]; then
-    find_machine  
+  if [[ "$DOCKERMACHINE" == "" ]]; then
+    if [[ "$THIS_MACHINE" == "" ]]; then
+      find_machine  
+    fi
+  else
+    THIS_MACHINE=$DOCKERMACHINE  
   fi 
   if [[ "$THIS_MACHINE" != "" ]]; then
     echo "Using: $THIS_MACHINE (for project: $HOTROD_PROJNAME)"  
@@ -399,8 +428,12 @@ dohotrodctl() {
     export HOTROD_PROJNAME=$(trim $(cat $DIR/default.yml | grep hotrod_project_name | cut -f2 -d':'))
     echo "Existing Project Found: $HOTROD_PROJNAME"
   fi 
-  if [[ "$THIS_MACHINE" == "" ]]; then
-    find_machine  
+  if [[ "$DOCKERMACHINE" == "" ]]; then
+    if [[ "$THIS_MACHINE" == "" ]]; then
+      find_machine  
+    fi
+  else
+    THIS_MACHINE=$DOCKERMACHINE  
   fi 
   if [[ "$THIS_MACHINE" != "" ]]; then
     echo "Using: $THIS_MACHINE (for project: $HOTROD_PROJNAME)"  
@@ -412,17 +445,12 @@ dohotrodctl() {
   fi
   echo "Creating hotrodctl container..."
   eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE) 
-  mkdir -p $DIR/hotrodctl/keys
-
-  echo "Copying docker machine keys..."
+  
   set +e
-  cp $DOCKER_CERT_PATH/{cert,key,ca}.pem $DIR/hotrodctlkeys/
-  set -e
-  
-  docker-compose -f core-hotrod.yml build hotrodctlkeys
-  docker-compose -f core-hotrod.yml up -d hotrodctlkeys
-  
+  docker-compose -f core-hotrod.yml stop hotrodctl
   docker-compose -f core-hotrod.yml build hotrodctl
+  docker-compose -f core-hotrod.yml rm -f hotrodctl
+  set +e
   docker-compose -f core-hotrod.yml up -d hotrodctl
 }
 
@@ -433,6 +461,9 @@ case "$COMMAND" in
     build)
         dobuild
         ;;
+    weave)
+        weave_proxy
+        ;;      
     hotrodctl)
         dohotrodctl
         ;;

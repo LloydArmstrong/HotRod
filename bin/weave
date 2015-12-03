@@ -3,7 +3,7 @@ set -e
 
 [ -n "$WEAVE_DEBUG" ] && set -x
 
-SCRIPT_VERSION="(unreleased version)"
+SCRIPT_VERSION="1.3.1"
 if [ "$SCRIPT_VERSION" = "(unreleased version)" ] ; then
     IMAGE_VERSION=latest
 else
@@ -11,19 +11,14 @@ else
 fi
 IMAGE_VERSION=${WEAVE_VERSION:-$IMAGE_VERSION}
 
-# - Docker versions prior to 1.2.0 cannot parse `--dns-search=.`
-# - Docker versions prior to 1.3.0 fail to include the domain when
-#   setting the hostname, so lookups for non-fq names fail.
-# - Docker version 1.3.0 contains the severe bug
-#   https://github.com/docker/docker/issues/8632
-# - The weavexec image embeds a Docker 1.3.1 client. Misleading
-#   version mismatch errors are produced if the user is running with a
-#   client *and* server with a lower version.
-# - Docker will complain if you run a client against a server older
-#   than that client.
+# - Docker versions prior to 1.6 cannot pull images from DockerHub
+# - The weavexec image embeds a Docker 1.6.2 client. Docker will give
+#   a "client is newer than server error" if the daemon has an older
+#   API version, which could be confusing if the user's Docker client
+#   is correctly matched with that older version.
 #
-# We therefore check that the user's Docker *client* is >= 1.3.1
-MIN_DOCKER_VERSION=1.3.1
+# We therefore check that the user's Docker *client* is >= 1.6
+MIN_DOCKER_VERSION=1.6.0
 
 # These are needed for remote execs, hence we introduce them here
 DOCKERHUB_USER=${DOCKERHUB_USER:-weaveworks}
@@ -58,6 +53,7 @@ weave launch-proxy  [-H <endpoint>] [--with-dns | --without-dns]
                       [--hostname-match <regexp>]
                       [--hostname-replacement <replacement>]
                       [--rewrite-inspect]
+weave launch-plugin
 weave env           [--restore]
 weave config
 weave connect       [--replace] [<peer> ...]
@@ -80,6 +76,7 @@ weave ps            [<container_id> ...]
 weave stop
 weave stop-router
 weave stop-proxy
+weave stop-plugin
 weave reset
 weave rmpeer        <peer_id>
 
@@ -288,13 +285,17 @@ fi
 BASE_IMAGE=$DOCKERHUB_USER/weave
 IMAGE=$BASE_IMAGE:$IMAGE_VERSION
 
+BASE_PLUGIN_IMAGE=$DOCKERHUB_USER/plugin
+PLUGIN_IMAGE=$BASE_PLUGIN_IMAGE:$IMAGE_VERSION
+PLUGIN_CONTAINER_NAME=weaveplugin
+
 PROCFS=${PROCFS:-/proc}
 DOCKER_BRIDGE=${DOCKER_BRIDGE:-docker0}
 CONTAINER_NAME=${WEAVE_CONTAINER_NAME:-weave}
 BRIDGE=weave
 CONTAINER_IFNAME=ethwe
 # ROUTER_HOSTNETNS_IFNAME is only used for fastdp with encryption
-ROUTER_HOSTNETNS_IFNAME=weave2
+ROUTER_HOSTNETNS_IFNAME=veth-weave
 PORT=${WEAVE_PORT:-6783}
 HTTP_PORT=6784
 PROXY_PORT=12375
@@ -420,6 +421,10 @@ create_bridge() {
             run_iptables -t filter -I FORWARD -i $DOCKER_BRIDGE -o $BRIDGE -j DROP
         fi
 
+        # let DNS traffic to weaveDNS, since otherwise it might get blocked by the likes of UFW
+        add_iptables_rule filter INPUT -i $DOCKER_BRIDGE -p udp --dport 53  -j ACCEPT
+        add_iptables_rule filter INPUT -i $DOCKER_BRIDGE -p tcp --dport 53  -j ACCEPT
+
         # Work around the situation where there are no rules allowing traffic
         # across our bridge. E.g. ufw
         add_iptables_rule filter FORWARD -i $BRIDGE -o $BRIDGE -j ACCEPT
@@ -525,6 +530,8 @@ destroy_bridge() {
         run_iptables -t filter -D FORWARD -i $DOCKER_BRIDGE -o $BRIDGE -j DROP 2>/dev/null || true
     fi
 
+    run_iptables -t filter -D INPUT -i $DOCKER_BRIDGE -p udp --dport 53  -j ACCEPT  >/dev/null 2>&1 || true
+    run_iptables -t filter -D INPUT -i $DOCKER_BRIDGE -p tcp --dport 53  -j ACCEPT  >/dev/null 2>&1 || true
     run_iptables -t filter -D FORWARD -i $BRIDGE -o $BRIDGE -j ACCEPT 2>/dev/null || true
     run_iptables -t nat -F WEAVE >/dev/null 2>&1 || true
     run_iptables -t nat -D POSTROUTING -j WEAVE >/dev/null 2>&1 || true
@@ -635,7 +642,7 @@ ask_version() {
                 echo "Unable to find $2 image." >&2
             fi
     fi
-    [ -n "$DOCKERIMAGE" ] && docker run --rm -e WEAVE_CIDR=none $3 $DOCKERIMAGE $COVERAGE_ARGS --version
+    [ -n "$DOCKERIMAGE" ] && docker run --rm --net=none -e WEAVE_CIDR=none $3 $DOCKERIMAGE $COVERAGE_ARGS --version
 }
 
 router_opts_fastdp() {
@@ -673,8 +680,10 @@ router_opts_bridge() {
 setup_router_iface_fastdp() {
     if [ -n "$WEAVE_PASSWORD" ] ; then
         # See router_opts_fastdp
-        # In case there is a lingering weave2 netdev
-        ip link del $ROUTER_HOSTNETNS_IFNAME >/dev/null 2>&1 || true
+        # No-op if already attached
+        if ip link show $LOCAL_IFNAME >/dev/null 2>&1 ; then
+            return 0
+        fi
         connect_container_to_bridge $ROUTER_HOSTNETNS_IFNAME &&
             ip link set $ROUTER_HOSTNETNS_IFNAME up
     fi
@@ -685,13 +694,17 @@ setup_router_iface_bridge() {
         echo "Perhaps you are running the docker daemon with container networking disabled (-b=none)." >&2
         return 1
     fi
+    # No-op if already attached
+    if netnsenter ip link show $CONTAINER_IFNAME >/dev/null 2>&1 ; then
+        return 0
+    fi
     connect_container_to_bridge $CONTAINER_IFNAME &&
         netnsenter ethtool -K eth0 tx off >/dev/null &&
         netnsenter ip link set $CONTAINER_IFNAME up
 }
 
 attach() {
-    if [ -h "$PROCFS/$CONTAINER_PID/ns/net" -a -h "/proc/$$/ns/net" -a "$(readlink $PROCFS/$CONTAINER_PID/ns/net)" = "$(readlink /proc/$$/ns/net)" ] ; then
+    if [ -h "$PROCFS/$CONTAINER_PID/ns/net" -a -h "/proc/self/ns/net" -a "$(readlink $PROCFS/$CONTAINER_PID/ns/net)" = "$(readlink /proc/self/ns/net)" ] ; then
         echo "Container is running in the host network namespace, and therefore cannot be" >&2
         echo "connected to weave. Perhaps the container was started with --net=host." >&2
         return 1
@@ -986,12 +999,16 @@ dns_args() {
 }
 
 etc_hosts_contents() {
-    NAME=$1
+    FQDN=$1
     shift
+    NAME=${FQDN%%.*}
+    HOSTNAMES="$NAME"
+    [ "$NAME" = "$FQDN" -o "$NAME." = "$FQDN" ] || HOSTNAMES="$FQDN $HOSTNAMES"
+
     echo "# created by Weave - BEGIN"
     echo "# container hostname"
     for CIDR in $ALL_CIDRS ; do
-        echo "${CIDR%/*}    $NAME"
+        echo "${CIDR%/*}    $HOSTNAMES"
     done
     echo
     echo "# static names added with --add-host"
@@ -1014,16 +1031,16 @@ EOF
 }
 
 rewrite_etc_hosts() {
-    HOSTS_PATH_AND_NAME=$(docker inspect -f '{{.HostsPath}} {{.Config.Hostname}}' $CONTAINER)
-    HOSTS=${HOSTS_PATH_AND_NAME% *}
-    NAME=${HOSTS_PATH_AND_NAME#* }
+    HOSTS_PATH_AND_FQDN=$(docker inspect -f '{{.HostsPath}} {{.Config.Hostname}}.{{.Config.Domainname}}' $CONTAINER)
+    HOSTS=${HOSTS_PATH_AND_FQDN% *}
+    FQDN=${HOSTS_PATH_AND_FQDN#* }
     CONTAINERS_PATH=$(dirname $HOSTS)
     MNT=/container
     MNT_HOSTS=$MNT/$(basename $HOSTS)
-    CONTENTS="$(etc_hosts_contents $NAME $@)"
+    CONTENTS="$(etc_hosts_contents $FQDN $@)"
     # rewrite /etc/hosts, unlinking the file (so Docker does not modify it again) but
     # leaving it with valid contents...
-    docker run --rm \
+    docker run --rm --net=none --privileged \
         -v $CONTAINERS_PATH:$MNT \
         --entrypoint=sh \
         $EXEC_IMAGE -c "echo '$CONTENTS' > $MNT_HOSTS && rm -f $MNT_HOSTS && echo '$CONTENTS' > $MNT_HOSTS"
@@ -1052,15 +1069,13 @@ when_weave_running() {
 # the container as the first argument, the FQDN as the second argument
 # and $3.. as additional arguments
 with_container_fqdn() {
-    CONTAINER="$1"
+    CONT="$1"
     COMMAND="$2"
     shift 2
 
-    CONTAINER_FQDN=$(docker inspect --format='{{.Config.Hostname}}.{{.Config.Domainname}}' $CONTAINER 2>/dev/null) || return 0
-
-    if echo "$CONTAINER_FQDN" | grep -Eq '[^.]+\..+' ; then
-        $COMMAND "$CONTAINER" "$CONTAINER_FQDN" "$@"
-    fi
+    CONT_FQDN=$(docker inspect --format='{{.Config.Hostname}}.{{.Config.Domainname}}' $CONT 2>/dev/null) || return 0
+    CONT_NAME=${CONT_FQDN%%.*}
+    [ "$CONT_NAME" = "$CONT_FQDN" -o "$CONT_NAME." = "$CONT_FQDN" ] || $COMMAND "$CONT" "$CONT_FQDN" "$@"
 }
 
 # Register FQDN in $2 as names for addresses $3.. under full container ID $1
@@ -1449,6 +1464,9 @@ launch_router() {
 
     if [ "$BRIDGE_TYPE" = fastdp ] ; then
         NETHOST_OPT="--net=host"
+        HTTP_IP=127.0.0.1
+        # In case there is a lingering veth-weave netdev
+        ip link del $ROUTER_HOSTNETNS_IFNAME >/dev/null 2>&1 || true
     fi
 
     # Set WEAVE_DOCKER_ARGS in the environment in order to supply
@@ -1466,8 +1484,21 @@ launch_router() {
         --ipalloc-range "$IPRANGE" \
         --dns-effective-listen-address $DOCKER_BRIDGE_IP \
         ${NETHOST_OPT:+$DNS_ROUTER_OPTS} $NO_DNS_OPT \
+        --http-addr $HTTP_IP:$HTTP_PORT \
         --docker-api "unix:///var/run/docker.sock" "$@")
-    with_container_netns_or_die $ROUTER_CONTAINER setup_router_iface_$BRIDGE_TYPE
+    with_container_netns_or_die $CONTAINER_NAME setup_router_iface_$BRIDGE_TYPE
+    attach_router
+}
+
+# Recreate the parameter values that are set when the router is first launched
+fetch_router_args() {
+    CONTAINER_ARGS=$(docker inspect -f '{{.Args}}' $CONTAINER_NAME)
+    IPRANGE=$(echo $CONTAINER_ARGS | grep -o -e '-ipalloc-range [^ ]*') || true
+    NO_DNS_OPT=$(echo $CONTAINER_ARGS | grep -o -e '--no-dns') || true
+    WEAVE_PASSWORD=$(docker inspect -f '{{.Config.Env}}' $CONTAINER_NAME | sed -n -e 's/.*WEAVE_PASSWORD=\([^] ]*\).*/\1/p')
+}
+
+attach_router() {
     err_msg=$(death_msg $CONTAINER_NAME)
     container_ip $CONTAINER_NAME "$err_msg" "$err_msg" || return 1
     wait_for_status $CONTAINER_NAME http_call $CONTAINER_IP:$HTTP_PORT
@@ -1488,7 +1519,7 @@ launch_router() {
 stop_router() {
     stop $CONTAINER_NAME "Weave"
     conntrack -D -p udp --dport $PORT >/dev/null 2>&1 || true
-    # remove the weave2 netdev in a fastdp context
+    # remove the veth-weave netdev in a fastdp context
     [ -d /sys/class/net/$BRIDGE -a ! -d /sys/class/net/$BRIDGE/bridge ] \
         && ip link del $ROUTER_HOSTNETNS_IFNAME >/dev/null 2>&1 || true
 }
@@ -1499,14 +1530,8 @@ launch_proxy() {
     # when launching the weaveproxy container.
     docker_client_args $DOCKER_CLIENT_ARGS
     proxy_args "$@"
-    HOSTS_PATH=$(docker run --rm \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      --entrypoint=/bin/sh \
-      $EXEC_IMAGE -c 'docker inspect -f {{.HostsPath}} $(hostname)')
-    CONTAINERS_PATH="$(dirname $(dirname "$HOSTS_PATH"))"
     PROXY_CONTAINER=$(docker run --privileged -d --name=$PROXY_CONTAINER_NAME --net=host \
         $PROXY_VOLUMES \
-        -v "$CONTAINERS_PATH":"$CONTAINERS_PATH" \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v /var/run/weave:/var/run/weave \
         -v /proc:/hostproc \
@@ -1523,6 +1548,19 @@ launch_proxy() {
 stop_proxy() {
     warn_if_stopping_proxy_in_env
     stop $PROXY_CONTAINER_NAME "Proxy"
+}
+
+launch_plugin() {
+    PLUGIN_CONTAINER=$(docker run --privileged -d --name=$PLUGIN_CONTAINER_NAME \
+        --restart=always \
+        --net=host \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v /run/docker/plugins:/run/docker/plugins \
+        $PLUGIN_IMAGE "$@")
+}
+
+stop_plugin() {
+    stop $PLUGIN_CONTAINER_NAME "Plugin"
 }
 
 ##########################################################################################
@@ -1623,7 +1661,7 @@ shift 1
 
 case "$COMMAND" in
     setup)
-        for img in $IMAGE $EXEC_IMAGE ; do
+        for img in $IMAGE $EXEC_IMAGE $PLUGIN_IMAGE ; do
             docker pull $img
         done
         ;;
@@ -1635,6 +1673,16 @@ case "$COMMAND" in
     # intentionally undocumented since it assumes knowledge of weave
     # internals
     create-bridge)
+        # This subcommand may be run without the docker daemon, but
+        # fastdp needs to run the router container to setup the ODP
+        # bridge, hence:
+        if [ -z "$WEAVE_NO_FASTDP" ] ; then
+            cat 1>&2 <<EOF
+'weave create-bridge' is not compatible with fast data path.  Please set
+the WEAVE_NO_FASTDP environment variable.
+EOF
+            exit 1
+        fi
         create_bridge --without-ethtool
         ;;
     launch)
@@ -1651,11 +1699,24 @@ case "$COMMAND" in
         launch_router "$@"
         echo $ROUTER_CONTAINER
         ;;
+    attach-router)
+        check_running $CONTAINER_NAME
+        enforce_docker_bridge_addr_assign_type
+        create_bridge
+        fetch_router_args
+        with_container_netns $CONTAINER_NAME setup_router_iface_$BRIDGE_TYPE
+        attach_router
+        ;;
     launch-proxy)
         deprecation_warnings "$@"
         check_not_running $PROXY_CONTAINER_NAME $BASE_EXEC_IMAGE
         launch_proxy "$@"
         echo $PROXY_CONTAINER
+        ;;
+    launch-plugin)
+        check_not_running $PLUGIN_CONTAINER_NAME $BASE_PLUGIN_IMAGE
+        launch_plugin "$@"
+        echo $PLUGIN_CONTAINER
         ;;
     env|proxy-env)
         [ "$COMMAND" = "env" ] || deprecation_warning "$COMMAND" "'weave env'"
@@ -1711,6 +1772,11 @@ case "$COMMAND" in
             echo
             echo "       Service: proxy"
             echo "       Address: $PROXY_ADDRS"
+        fi
+        if [ -z "$SUB_STATUS" ] && check_running $PLUGIN_CONTAINER_NAME 2>/dev/null ; then
+            echo
+            echo "       Service: plugin"
+            echo "    DriverName: weave"
         fi
         [ -n "$SUB_STATUS" ] || echo
         [ $res -eq 0 ]
@@ -1856,9 +1922,9 @@ case "$COMMAND" in
                 arp_update $BRIDGE $CIDR
                 add_iptables_rule nat WEAVE -d $CIDR ! -s $CIDR -j MASQUERADE
                 add_iptables_rule nat WEAVE -s $CIDR ! -d $CIDR -j MASQUERADE
-                if [ -n "$FQDN" ] ; then
-                    when_weave_running put_dns_fqdn_no_check_alive weave:expose $FQDN $CIDR
-                fi
+            fi
+            if [ -n "$FQDN" ] ; then
+                when_weave_running put_dns_fqdn_no_check_alive weave:expose $FQDN $CIDR
             fi
         done
         show_addrs $ALL_CIDRS
@@ -1887,8 +1953,8 @@ case "$COMMAND" in
         ;;
     stop)
         [ $# -eq 0 ] || usage
-        stop_proxy
         stop_router
+        stop_proxy
         ;;
     stop-router)
         [ $# -eq 0 ] || usage
@@ -1897,6 +1963,10 @@ case "$COMMAND" in
     stop-proxy)
         [ $# -eq 0 ] || usage
         stop_proxy
+        ;;
+    stop-plugin)
+        [ $# -eq 0 ] || usage
+        stop_plugin
         ;;
     reset)
         [ $# -eq 0 ] || usage
