@@ -11,11 +11,6 @@ steps:
 
   - waiter
 
-  - name: "HotRod Init"
-    command: "./test/run_ci_seed.sh"
-
-  - waiter
-
   - name: "Run Template Engine"
     command: "mini.py"
     
@@ -23,6 +18,11 @@ steps:
 
   - name: "Remove stale apps"
     command: "rm -rf ./local/*"
+
+  - waiter
+
+  - name: "Seed the project and default files"
+    command: "./test/run_ci_seed.sh"
 
   - waiter
   
