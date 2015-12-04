@@ -3,7 +3,7 @@ hotrodctl:
   extends:
     file: common-services.yml
     service: hotrod-core
-  image: panoptix/hotrod-hotrodctl:release-v0.1.2
+  image: panoptix/hotrod-hotrodctl:release-v0.1.3
   environment:
     - constraint:master==true 
     - HOTROD_PROJNAME={{ hotrod_project_name }}         
