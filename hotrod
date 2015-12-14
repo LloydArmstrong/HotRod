@@ -449,7 +449,7 @@ dohotrodctl() {
   eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE) 
   
   echo "+++ Install Weave if needed"
-  docker-machine ssh $THIS_MACHINE 'test -f /usr/local/bin/weave || { curl -L https://github.com/weaveworks/weave/releases/download/latest_release/weave > /usr/local/bin/weave && chmod u+x /usr/local/bin/weave; }'
+  docker-machine ssh $THIS_MACHINE 'test -f /usr/local/bin/weave || { sudo curl -L https://github.com/weaveworks/weave/releases/download/latest_release/weave -o /usr/local/bin/weave && sudo chmod u+x /usr/local/bin/weave; }'
   
   export WEAVE_PASSWORD=$(echo $(cat ./default.yml | grep weave_shared_secret | cut -d":" -f2))
   set +e
