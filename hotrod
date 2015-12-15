@@ -373,12 +373,12 @@ weave_proxy() {
 #     echo ""
 #     exit 1
 #   fi
-#   eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE)    
-#   WEAVE_PASSWORD=$(echo $(cat ./default.yml | grep weave_shared_secret | cut -d":" -f2))
-#   set +o history
-#   $DIR/bin/weave launch-router --ipalloc-range 169.254.0.0/16 --password $WEAVE_PASSWORD
-#   set -o history  
-#   $DIR/bin/weave launch-proxy --no-default-ipalloc --no-rewrite-hosts --without-dns -H /var/run/weave/weave.sock -H 0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
+  eval $(docker-machine env ${SWARM_OPTION}  $THIS_MACHINE)    
+  WEAVE_PASSWORD=$(echo $(cat ./default.yml | grep weave_shared_secret | cut -d":" -f2))
+  set +o history
+  $DIR/bin/weave launch-router --ipalloc-range 169.254.0.0/16 --password $WEAVE_PASSWORD
+  set -o history  
+  $DIR/bin/weave launch-proxy --no-default-ipalloc --no-rewrite-hosts --without-dns -H /var/run/weave/weave.sock -H 0.0.0.0:12345 --tlsverify --tlscacert /etc/docker/ca.pem --tlscert /etc/docker/server.pem --tlskey /etc/docker/server-key.pem
 }
 
 dobuild() {
