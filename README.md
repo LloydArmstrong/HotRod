@@ -33,19 +33,27 @@ It is under heavy development, please contact support@panoptix.co.za for assista
   ```
   export DIGITALOCEAN_ACCESS_TOKEN=my_api_token
   export DIGITALOCEAN_REGION=ams3
+  export DIGITALOCEAN_SIZE=8gb
   ./bin/do_machine.sh create myhotrodserver Hotrod
   ```
+  
+  This will create a server with the default project named `Hotrod`. The project should be unique for each Hotrod instance.
 
-  To view your machine run:
+- To view your machine run:
 
   ```
   docker-machine ls
   ```
-
-  This will create a server with the default project named `Hotrod`. The project should be unique for each Hotrod instance.
-
-- run `./hotrod init` and follow the prompts
-
+- Run `mini.py` in the HotRod directory
+  
+- Run the install apps script:
+  
+  ```
+  /bin/bash ./bin/install_apps.sh
+  ```
+- Run `./hotrod init`, ensuring that the Project Name specified when building the machine is the same as the one entered     during the prompting process. If you have done this correctly, the IP address of your machine should appear in the prompt   that follows.
+  
+  
 ### Do something custom
 
 There is a special folder called `local`. Add you docker-compose files there to your hearts content. Look at the dc-elk.yml.orig.tpl file for examples. The labels, etc should be used too.
